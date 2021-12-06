@@ -1,0 +1,153 @@
+html {
+  box-sizing: border-box;
+  font-size: 20px;
+}
+
+*,
+*::before,
+*::after {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  background-color: antiquewhite;
+}
+
+nav {
+  margin-right: 0rem;
+}
+
+/* H2 Animation */
+.actor-contain h2 {
+  transform: translate(-50%, -50%);
+}
+
+.actor-contain h2 span {
+  color: darkred;
+  padding: 10px 15px;
+  font-family: poppins;
+  display: table-cell;
+  font-size: 2rem;
+  text-shadow: 0 15px 25px rgba(0, 0, 0, 0.5);
+}
+
+.actor-contain h2:hover span {
+  animation: dance 0.5s infinite;
+  cursor: pointer;
+}
+
+@keyframes dance {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-30px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.actor-contain h2 span:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.actor-contain h2 span:nth-child(3) {
+  animation-delay: 0.1s;
+}
+
+.actor-contain h2 span:nth-child(5) {
+  animation-delay: 0.1s;
+}
+
+.actor-contain h2 span:nth-child(7) {
+  animation-delay: 0.1s;
+}
+
+.actor-contain h2 span:nth-child(9) {
+  animation-delay: 0.1s;
+}
+
+.actor-contain h2 span:nth-child(11) {
+  animation-delay: 0.1s;
+}
+
+.contain-instructions {
+  margin: 0 auto;
+  width: 35rem;
+  text-align: center;
+}
+
+.collapse.navbar-collapse {
+  justify-content: space-between;
+}
+
+.me-3 {
+  padding: 0rem 2rem 0 0;
+}
+
+.btn.btn-outline-light.btn-rounded {
+  border-radius: 1.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.container.p-4.pb-0 {
+  max-height: 5rem;
+}
+
+.d-flex.p-2 {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.text-center.p-3 {
+  background-color: #343a40;
+}
+
+.row {
+  gap: 0.5rem;
+  margin-left: 85px;
+  margin-right: 0;
+  width: 1100px;
+}
+
+.card {
+  max-width: 400px;
+  text-align: center;
+}
+
+.actor-contain {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.actor-contain h2 {
+  transform: rotate(-90deg);
+  margin-top: 23rem;
+  height: 4rem;
+  margin-right: -10rem;
+}
+
+.media-contain.actor-contain h2 {
+  margin-top: 7.5rem;
+}
+
+#instructions {
+  display: block;
+}
+
+#actors {
+  display: none;
+  margin: 1rem;
+}
+
+#media {
+  display: none;
+  margin: 1rem;
+}

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous" />
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="css/main.css" />
+  <title>Simple SPA</title>
+</head>
+
+<body>
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="#" data-abc="true">MoviesDB</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor02" aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarColor02">
+        <!-- Example split danger button -->
+        <div class="btn-group">
+          <button type="button" class="btn btn-info">Sort</button>
+          <button type="button" class="btn btn-info dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-expanded="false">
+            <span class="sr-only">Toggle Dropdown</span>
+          </button>
+          <div class="dropdown-menu">
+            <a class="dropdown-item" href="#">By Name</a>
+            <a class="dropdown-item" href="#">By Popularity</a>
+            <!-- <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="#">Separated link</a> -->
+          </div>
+        </div>
+        <form class="form-inline my-2 my-lg-0">
+          <input id="search" class="form-control mr-sm-2" type="search" placeholder="Actor Name" />
+          <button id="btnSearch" class="btn btn-secondary my-2 my-sm-0" type="submit">
+            Search
+          </button>
+        </form>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section id="instructions" class="contain-instructions">
+      <h2>How to Start</h2>
+      <div class="content">
+        <p>
+          Enter an actor name in the search box at the top of the screen and
+          click on the search icon.
+        </p>
+        <p>
+          You will be shown a list of actors whose name matches what you
+          typed.
+        </p>
+        <p>
+          Clicking on an actors name or image will load a list of movies and
+          shows in which they have appeared.
+        </p>
+      </div>
+    </section>
+
+    <section id="actors" class="actor-contain">
+      <h2>
+        <span>A</span><span>C</span><span>T</span><span>O</span><span>R</span><span>S</span>
+      </h2>
+      <div class="row row-cols-1 row-cols-md-4">
+        <div class="col mb-4">
+          <div class="card">
+            <img src="images/testImg.jpg" class="card-img-top" alt="..." />
+            <div class="card-body">
+              <h5 class="card-title">Card title</h5>
+              <p class="card-text act-known">Known For</p>
+              <p class="card-text">Popularity</p>
+            </div>
+          </div>
+        </div>
+      
+      </div>
+    </section>
+
+    <section id="media" class="media-contain actor-contain">
+      <h2>
+        <span>M</span><span>E</span><span>D</span><span>I</span><span>A</span><span>S</span>
+      </h2>
+      <!-- This div is the new one I made to append your documentFragment to -->
+      <div id="mediaCard" class="row row-cols-1 row-cols-md-4"></div>
+      <!-- You don't/shouldnt build these cards in HTML, I get that you may have just done it for testing purposes though :)  -->
+
+      <!-- <div class="row row-cols-1 row-cols-md-4">
+        <div class="col mb-4">
+          <div class="card">
+            <img src="images/testImg.jpg" class="card-img-top" alt="..." />
+            <div class="card-body">
+              <h5 class="card-title">Media Title</h5>
+              <p class="card-text">Media Type</p>
+            </div>
+          </div>
+        </div>
+        <div class="col mb-4">
+          <div class="card">
+            <img src="images/testImg.jpg" class="card-img-top" alt="..." />
+            <div class="card-body">
+              <h5 class="card-title">Media Title</h5>
+              <p class="card-text">Media Type</p>
+            </div>
+          </div>
+        </div>
+        <div class="col mb-4">
+          <div class="card">
+            <img src="images/testImg.jpg" class="card-img-top" alt="..." />
+            <div class="card-body">
+              <h5 class="card-title">Media Title</h5>
+              <p class="card-text">Media Type</p>
+            </div>
+          </div>
+        </div>
+      </div> -->
+  </main>
+
+  <!-- <footer class="text-center text-white">
+     
+      <div class="text-center p-3">
+        © 2021 Copyright:
+        <a class="text-white" href="https://mdbootstrap.com/">MoviesDB.com</a>
+      </div>
+     
+    </footer> -->
+
+  <script src="js/main.js"></script>
+</body>
+
+</html>
