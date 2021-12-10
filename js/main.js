@@ -112,6 +112,124 @@ const ACTORS = {
       cardBody.append(actorName, actKnown, actorPop);
 
       df.appendChild(col);
+      let srtName = document.getElementById('srtName');
+      srtName.addEventListener('click', SORT.sortName);
+      let srtPop = document.getElementById('srtPop');
+      srtPop.addEventListener('click', SORT.sortPopularity);
+      card.addEventListener('click', MEDIA.displayMedias);
+    });
+    cards.append(df);
+  },
+};
+
+const SORT = {
+  sortName: () => {
+    let key = STORAGE.Base_KEY + SEARCH.input;
+    console.log(key);
+    let actorCards = JSON.parse(localStorage.getItem(key));
+
+    let cards = document.querySelector('.row');
+    cards.innerHTML = '';
+
+    actorCards.sort((a, b) => {
+      if (a.name > b.name) {
+        return 1;
+      } else {
+        return -1;
+      }
+    });
+
+    let df = document.createDocumentFragment();
+
+    actorCards.forEach((sname) => {
+      let col = document.createElement('div');
+      let card = document.createElement('div');
+      let cardBody = document.createElement('div');
+      let actorImg = document.createElement('img');
+      let actorName = document.createElement('h5');
+      let actorPop = document.createElement('p');
+      let actKnown = document.createElement('p');
+
+      col.className = 'col';
+      card.className = 'card';
+      cardBody.className = 'card-body';
+      actorName.className = 'card-title';
+      actorPop.className = 'card-text';
+      actKnown.className = 'card-text act-known';
+
+      if (sname.profile_path)
+        actorImg.src = APP.IMG_BASE_URL + 'w500' + sname.profile_path;
+      else actorImg.src = 'https://via.placeholder.com/150x226';
+
+      actorImg.alt = sname.name;
+
+      card.setAttribute('data-id', sname.id);
+      actorName.textContent = sname.name;
+      actorPop.textContent = `Popularity: ${sname.popularity}`;
+      actKnown.textContent = `Known for: ${sname.known_for_department}`;
+
+      col.append(card);
+      card.append(actorImg, cardBody);
+      cardBody.append(actorName, actKnown, actorPop);
+
+      df.appendChild(col);
+
+      card.addEventListener('click', MEDIA.displayMedias);
+    });
+    cards.append(df);
+  },
+
+  sortPopularity: () => {
+    let key = STORAGE.Base_KEY + SEARCH.input;
+    console.log(key);
+    let actorCards = JSON.parse(localStorage.getItem(key));
+
+    let cards = document.querySelector('.row');
+    cards.innerHTML = '';
+
+    actorCards.sort((a, b) => {
+      if (a.popularity > b.popularity) {
+        return 1;
+      } else {
+        return -1;
+      }
+    });
+
+    let df = document.createDocumentFragment();
+
+    actorCards.forEach((spopularity) => {
+      let col = document.createElement('div');
+      let card = document.createElement('div');
+      let cardBody = document.createElement('div');
+      let actorImg = document.createElement('img');
+      let actorName = document.createElement('h5');
+      let actorPop = document.createElement('p');
+      let actKnown = document.createElement('p');
+
+      col.className = 'col';
+      card.className = 'card';
+      cardBody.className = 'card-body';
+      actorName.className = 'card-title';
+      actorPop.className = 'card-text';
+      actKnown.className = 'card-text act-known';
+
+      if (spopularity.profile_path)
+        actorImg.src = APP.IMG_BASE_URL + 'w500' + spopularity.profile_path;
+      else actorImg.src = 'https://via.placeholder.com/150x226';
+
+      actorImg.alt = spopularity.name;
+
+      card.setAttribute('data-id', spopularity.id);
+      actorName.textContent = spopularity.name;
+      actorPop.textContent = `Popularity: ${spopularity.popularity}`;
+      actKnown.textContent = `Known for: ${spopularity.known_for_department}`;
+
+      col.append(card);
+      card.append(actorImg, cardBody);
+      cardBody.append(actorName, actKnown, actorPop);
+
+      df.appendChild(col);
+
       card.addEventListener('click', MEDIA.displayMedias);
     });
     cards.append(df);
@@ -124,6 +242,9 @@ const MEDIA = {
   displayMedias: (medias) => {
     let actorsPage = document.getElementById('actors');
     let mediaPage = document.getElementById('media');
+
+    let actorH2 = document.getElementById('act');
+    actorH2.addEventListener('click', MEDIA.previousPage);
 
     actorsPage.style.display = 'none';
     mediaPage.style.display = 'flex';
@@ -139,8 +260,8 @@ const MEDIA = {
 
     // SEARCH.input;
 
-    let cards = document.querySelector('.row');
-    cards.innerHTML = '';
+    // let cards = document.querySelector('.row');
+    // cards.innerHTML = '';
 
     let dfMedia = document.createDocumentFragment();
 
@@ -185,9 +306,17 @@ const MEDIA = {
         });
       }
     });
-
     let div = document.getElementById('mediaCard');
     div.append(dfMedia);
+  },
+
+  previousPage: (medias) => {
+    medias.preventDefault();
+    let actorsPage = document.getElementById('actors');
+    let mediaPage = document.getElementById('media');
+
+    mediaPage.style.display = 'none';
+    actorsPage.style.display = 'flex';
   },
 };
 
