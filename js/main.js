@@ -5,9 +5,11 @@ const APP = {
   baseURL: 'https://api.themoviedb.org/3/',
   IMG_BASE_URL: 'https://image.tmdb.org/t/p/',
 
-  init: (ev) => {
+  init: () => {
+    history.replaceState(null, '', '#');
+    window.addEventListener('popstate', NAV.popHistory);
     let searchBtn = document.getElementById('btnSearch');
-    searchBtn.addEventListener('click', SEARCH.doSearch);
+    searchBtn.addEventListener('click', SEARCH.getInput);
   },
 };
 
@@ -15,10 +17,18 @@ const SEARCH = {
   results: [],
   input: '',
 
-  doSearch: (ev) => {
+  getInput: (ev) => {
     ev.preventDefault();
+    location.hash = '';
     SEARCH.input = document.getElementById('search').value;
+    // location.hash = SEARCH.input;
+    history.pushState({}, SEARCH.input, `#${SEARCH.input}`);
 
+    let input = location.hash;
+    SEARCH.doSearch(input);
+  },
+
+  doSearch: (input) => {
     let key = STORAGE.Base_KEY + SEARCH.input;
     // SEARCH.doFetch();
 
@@ -30,7 +40,9 @@ const SEARCH = {
       SEARCH.doFetch();
     }
   },
+
   doFetch() {
+    console.log(APP.KEY);
     let url = `${APP.baseURL}search/person?api_key=${APP.KEY}&query=${SEARCH.input}&language=en-US`;
 
     fetch(url)
@@ -112,134 +124,102 @@ const ACTORS = {
       cardBody.append(actorName, actKnown, actorPop);
 
       df.appendChild(col);
+
       let srtName = document.getElementById('srtName');
       srtName.addEventListener('click', SORT.sortName);
+
       let srtPop = document.getElementById('srtPop');
       srtPop.addEventListener('click', SORT.sortPopularity);
-      card.addEventListener('click', MEDIA.displayMedias);
+
+      card.addEventListener('click', MEDIA.setHistory);
     });
     cards.append(df);
   },
 };
 
 const SORT = {
-  sortName: () => {
+  sortName: (ev) => {
+    ev.preventDefault();
+
     let key = STORAGE.Base_KEY + SEARCH.input;
     console.log(key);
+
     let actorCards = JSON.parse(localStorage.getItem(key));
 
-    let cards = document.querySelector('.row');
-    cards.innerHTML = '';
+    let srtName = document.getElementById('srtName');
+    srtName.classList.toggle('sort');
 
     actorCards.sort((a, b) => {
-      if (a.name > b.name) {
-        return 1;
+      if (srtName.classList.contains('sort')) {
+        srtName.classList.add('asc');
+        srtName.classList.remove('des');
+
+        if (a.name > b.name) {
+          return 1;
+        } else {
+          return -1;
+        }
       } else {
-        return -1;
+        srtName.classList.remove('asc');
+        srtName.classList.add('des');
+
+        if (a.name < b.name) {
+          return 1;
+        } else {
+          return -1;
+        }
       }
     });
 
-    let df = document.createDocumentFragment();
-
-    actorCards.forEach((sname) => {
-      let col = document.createElement('div');
-      let card = document.createElement('div');
-      let cardBody = document.createElement('div');
-      let actorImg = document.createElement('img');
-      let actorName = document.createElement('h5');
-      let actorPop = document.createElement('p');
-      let actKnown = document.createElement('p');
-
-      col.className = 'col';
-      card.className = 'card';
-      cardBody.className = 'card-body';
-      actorName.className = 'card-title';
-      actorPop.className = 'card-text';
-      actKnown.className = 'card-text act-known';
-
-      if (sname.profile_path)
-        actorImg.src = APP.IMG_BASE_URL + 'w500' + sname.profile_path;
-      else actorImg.src = 'https://via.placeholder.com/150x226';
-
-      actorImg.alt = sname.name;
-
-      card.setAttribute('data-id', sname.id);
-      actorName.textContent = sname.name;
-      actorPop.textContent = `Popularity: ${sname.popularity}`;
-      actKnown.textContent = `Known for: ${sname.known_for_department}`;
-
-      col.append(card);
-      card.append(actorImg, cardBody);
-      cardBody.append(actorName, actKnown, actorPop);
-
-      df.appendChild(col);
-
-      card.addEventListener('click', MEDIA.displayMedias);
-    });
-    cards.append(df);
+    ACTORS.displayActors(actorCards);
   },
 
-  sortPopularity: () => {
+  sortPopularity: (ev) => {
+    ev.preventDefault();
+
     let key = STORAGE.Base_KEY + SEARCH.input;
     console.log(key);
     let actorCards = JSON.parse(localStorage.getItem(key));
 
-    let cards = document.querySelector('.row');
-    cards.innerHTML = '';
+    let srtPop = document.getElementById('srtPop');
+    srtPop.classList.toggle('sort');
 
     actorCards.sort((a, b) => {
-      if (a.popularity > b.popularity) {
-        return 1;
+      if (srtPop.classList.contains('sort')) {
+        srtPop.classList.add('asc');
+        srtPop.classList.remove('des');
+
+        if (a.popularity > b.popularity) {
+          return 1;
+        } else {
+          return -1;
+        }
       } else {
-        return -1;
+        srtPop.classList.remove('asc');
+        srtPop.classList.add('des');
+
+        if (a.popularity < b.popularity) {
+          return 1;
+        } else {
+          return -1;
+        }
       }
     });
 
-    let df = document.createDocumentFragment();
-
-    actorCards.forEach((spopularity) => {
-      let col = document.createElement('div');
-      let card = document.createElement('div');
-      let cardBody = document.createElement('div');
-      let actorImg = document.createElement('img');
-      let actorName = document.createElement('h5');
-      let actorPop = document.createElement('p');
-      let actKnown = document.createElement('p');
-
-      col.className = 'col';
-      card.className = 'card';
-      cardBody.className = 'card-body';
-      actorName.className = 'card-title';
-      actorPop.className = 'card-text';
-      actKnown.className = 'card-text act-known';
-
-      if (spopularity.profile_path)
-        actorImg.src = APP.IMG_BASE_URL + 'w500' + spopularity.profile_path;
-      else actorImg.src = 'https://via.placeholder.com/150x226';
-
-      actorImg.alt = spopularity.name;
-
-      card.setAttribute('data-id', spopularity.id);
-      actorName.textContent = spopularity.name;
-      actorPop.textContent = `Popularity: ${spopularity.popularity}`;
-      actKnown.textContent = `Known for: ${spopularity.known_for_department}`;
-
-      col.append(card);
-      card.append(actorImg, cardBody);
-      cardBody.append(actorName, actKnown, actorPop);
-
-      df.appendChild(col);
-
-      card.addEventListener('click', MEDIA.displayMedias);
-    });
-    cards.append(df);
+    ACTORS.displayActors(actorCards);
   },
 };
 
 const MEDIA = {
-  medias: [],
+  setHistory: (ev) => {
+    let actorId = ev.target.closest('.card').getAttribute('data-id');
 
-  displayMedias: (medias) => {
+    // location.hash = SEARCH.input;
+    history.pushState({}, SEARCH.input, `${location.href}/${actorId}`);
+    MEDIA.displayMedias(actorId);
+  },
+
+  displayMedias: (actorId) => {
     let actorsPage = document.getElementById('actors');
     let mediaPage = document.getElementById('media');
 
@@ -249,19 +229,17 @@ const MEDIA = {
     actorsPage.style.display = 'none';
     mediaPage.style.display = 'flex';
 
-    let actorId = medias.target.closest('.card').getAttribute('data-id');
-    console.log(actorId);
-
     let key = STORAGE.Base_KEY + SEARCH.input;
     // console.log(key);
 
     let inputActor = JSON.parse(localStorage.getItem(key));
     // inputActor = JSON.parse(inputActor);
 
-    // SEARCH.input;
+    let actor = inputActor.filter((actor) => {
+      return actor.id == actorId;
+    });
 
-    // let cards = document.querySelector('.row');
-    // cards.innerHTML = '';
+    console.log(actor[0].known_for);
 
     let dfMedia = document.createDocumentFragment();
 
@@ -320,4 +298,28 @@ const MEDIA = {
   },
 };
 
+const NAV = {
+  popHistory: () => {
+    // document.getElementById('search').value = '';
+    let input = location.hash;
+
+    if (!input) {
+      let actorsPage = document.getElementById('actors');
+      let mediaPage = document.getElementById('media');
+      let homePage = document.getElementById('instructions');
+
+      actorsPage.style.display = 'none';
+      mediaPage.style.display = 'none';
+      homePage.style.display = 'block';
+    } else {
+      if (/\d/.test(input)) {
+        let actorID = input.split('/')[1];
+        MEDIA.displayMedias(actorID);
+      } else {
+        SEARCH.input = input.replace('#', '');
+        SEARCH.doSearch(input);
+      }
+    }
+  },
+};
 document.addEventListener('DOMContentLoaded', APP.init);
