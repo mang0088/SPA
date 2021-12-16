@@ -45,6 +45,10 @@ const SEARCH = {
     console.log(APP.KEY);
     let url = `${APP.baseURL}search/person?api_key=${APP.KEY}&query=${SEARCH.input}&language=en-US`;
 
+    document.getElementById(
+      'actors'
+    ).innerHTML = `<div class="mvLoading"></div>`;
+
     fetch(url)
       .then((response) => {
         if (response.ok) {
