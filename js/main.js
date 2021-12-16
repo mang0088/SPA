@@ -87,6 +87,9 @@ const ACTORS = {
     let homePage = document.getElementById('instructions');
     let actorsPage = document.getElementById('actors');
 
+    actorsPage.style.cssText = `
+    animation: pageAnimation 5s;
+   `;
     homePage.style.display = 'none';
     actorsPage.style.display = 'flex';
 
@@ -229,6 +232,10 @@ const MEDIA = {
 
     let actorH2 = document.getElementById('act');
     actorH2.addEventListener('click', MEDIA.previousPage);
+
+    mediaPage.style.cssText = `
+    animation: pageAnimation 5s;
+   `;
 
     actorsPage.style.display = 'none';
     mediaPage.style.display = 'flex';
