@@ -113,12 +113,12 @@ nav {
   background-color: #343a40;
 }
 
-.row {
+/* .row {
   gap: 0.5rem;
   margin-left: 85px;
   margin-right: 0;
   width: 1100px;
-}
+} */
 
 .card {
   max-width: 400px;
@@ -247,7 +247,7 @@ nav {
   color: #00acc1;
 }
 
-.mvLoading {
+/* .mvLoading {
   margin: 40vh auto;
   border: 16px solid red;
   border-top: 16px solid tomato;
@@ -264,7 +264,7 @@ nav {
   100% {
     transform: rotate(360deg);
   }
-}
+} */
 
 @keyframes pageAnimation {
   0% {

@@ -45,10 +45,6 @@ const SEARCH = {
     console.log(APP.KEY);
     let url = `${APP.baseURL}search/person?api_key=${APP.KEY}&query=${SEARCH.input}&language=en-US`;
 
-    document.getElementById(
-      'actors'
-    ).innerHTML = `<div class="mvLoading"></div>`;
-
     fetch(url)
       .then((response) => {
         if (response.ok) {
@@ -60,7 +56,6 @@ const SEARCH = {
         }
       })
       .then((data) => {
-        // console.log(data);
         SEARCH.results = data.results;
         STORAGE.setStorages(SEARCH.input, data.results);
         ACTORS.displayActors(data.results);
@@ -77,6 +72,7 @@ const STORAGE = {
   setStorages: (input, results) => {
     let key = STORAGE.Base_KEY + input;
     localStorage.setItem(key, JSON.stringify(results));
+    console.log(JSON.stringify(results));
   },
 };
 
@@ -84,14 +80,17 @@ const ACTORS = {
   actors: [],
 
   displayActors: (actors) => {
+    console.log(actors);
     let homePage = document.getElementById('instructions');
     let actorsPage = document.getElementById('actors');
+    let mediaPage = document.getElementById('media');
 
     actorsPage.style.cssText = `
     animation: pageAnimation 5s;
    `;
     homePage.style.display = 'none';
     actorsPage.style.display = 'flex';
+    mediaPage.style.display = 'none';
 
     let cards = document.querySelector('.row');
     cards.innerHTML = '';
@@ -107,7 +106,7 @@ const ACTORS = {
       let actorPop = document.createElement('p');
       let actKnown = document.createElement('p');
 
-      col.className = 'col';
+      col.className = 'col mb-0';
       card.className = 'card';
       cardBody.className = 'card-body';
       actorName.className = 'card-title';
@@ -230,8 +229,8 @@ const MEDIA = {
     let actorsPage = document.getElementById('actors');
     let mediaPage = document.getElementById('media');
 
-    let actorH2 = document.getElementById('act');
-    actorH2.addEventListener('click', MEDIA.previousPage);
+    // let actorH2 = document.getElementById('act');
+    // actorH2.addEventListener('click', MEDIA.previousPage);
 
     mediaPage.style.cssText = `
     animation: pageAnimation 5s;
@@ -243,7 +242,7 @@ const MEDIA = {
     let key = STORAGE.Base_KEY + SEARCH.input;
     // console.log(key);
 
-    let inputActor = JSON.parse(localStorage.getItem(key));
+    const inputActor = JSON.parse(localStorage.getItem(key));
     // inputActor = JSON.parse(inputActor);
 
     let actor = inputActor.filter((actor) => {
@@ -258,7 +257,7 @@ const MEDIA = {
       if (mediaContent.id == actorId) {
         mediaContent.known_for.forEach((media) => {
           let col = document.createElement('div');
-          col.className = 'col';
+          col.className = 'col mb-2';
 
           let card = document.createElement('div');
           card.className = 'card';
@@ -296,6 +295,7 @@ const MEDIA = {
       }
     });
     let div = document.getElementById('mediaCard');
+    div.innerHTML = '';
     div.append(dfMedia);
   },
 
