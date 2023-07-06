@@ -229,13 +229,16 @@ const MEDIA = {
     let actorsPage = document.getElementById('actors');
     let mediaPage = document.getElementById('media');
 
-    // let actorH2 = document.getElementById('act');
-    // actorH2.addEventListener('click', MEDIA.previousPage);
+    let actorH2 = document.getElementById('act');
+    actorH2.addEventListener('click', MEDIA.previousPage);
 
     mediaPage.style.cssText = `
     animation: pageAnimation 5s;
+    flex-direction: column;
+    align-items:center;
    `;
 
+    actorH2.style.display = 'block';
     actorsPage.style.display = 'none';
     mediaPage.style.display = 'flex';
 
