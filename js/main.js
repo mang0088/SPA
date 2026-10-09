@@ -10,6 +10,17 @@ const APP = {
     window.addEventListener('popstate', NAV.popHistory);
     let searchBtn = document.getElementById('btnSearch');
     searchBtn.addEventListener('click', SEARCH.getInput);
+
+    if (
+      window.matchMedia('(hover: hover) and (pointer: fine)').matches &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      document.addEventListener('pointermove', (event) => {
+        document.body.style.setProperty('--pointer-x', `${event.clientX}px`);
+        document.body.style.setProperty('--pointer-y', `${event.clientY}px`);
+      });
+    }
+
   },
 };
 
@@ -86,7 +97,7 @@ const ACTORS = {
     let mediaPage = document.getElementById('media');
 
     actorsPage.style.cssText = `
-    animation: pageAnimation 5s;
+    animation: glass-enter 600ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
    `;
     homePage.style.display = 'none';
     actorsPage.style.display = 'flex';
@@ -233,7 +244,7 @@ const MEDIA = {
     actorH2.addEventListener('click', MEDIA.previousPage);
 
     mediaPage.style.cssText = `
-    animation: pageAnimation 5s;
+    animation: glass-enter 600ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
     flex-direction: column;
     align-items:center;
    `;
