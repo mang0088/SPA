@@ -48,29 +48,25 @@
   </header>
 
   <main>
-    <section id="instructions" class="contain-instructions">
-      <h2>How to Start</h2>
-      <div class="content">
-        <p>
-          Enter an actor name in the search box at the top of the screen and
-          click on the search icon.
-        </p>
-        <p>
-          You will be shown a list of actors whose name matches what you
-          typed.
-        </p>
-        <p>
-          Clicking on an actors name or image will load a list of movies and
-          shows in which they have appeared.
-        </p>
+    <section id="discover" class="discover-contain" aria-labelledby="discoverTitle">
+      <div class="discover-heading">
+        <div>
+          <p class="discover-eyebrow">A little inspiration</p>
+          <h2 id="discoverTitle">Movies to explore</h2>
+          <p id="discoverStatus" role="status" aria-live="polite">Finding a random selection for you…</p>
+        </div>
+        <button id="shuffleMovies" class="shuffle-button" type="button">
+          <span aria-hidden="true">↻</span> Shuffle picks
+        </button>
       </div>
+      <div id="discoverMovies" class="row row-cols-1 row-cols-md-6" aria-label="Random movie picks"></div>
     </section>
 
     <section id="actors" class="actor-contain">
       <!-- <h2>
         <span>A</span><span>C</span><span>T</span><span>O</span><span>R</span><span>S</span>
       </h2> -->
-      <div class="row row-cols-1 row-cols-md-6">
+      <div id="actorCards" class="row row-cols-1 row-cols-md-6">
         <div class="col mb-4">
           <div class="card">
             <img src="images/testImg.jpg" class="card-img-top" alt="..." />
