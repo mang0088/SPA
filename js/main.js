@@ -1,7 +1,6 @@
 'use strict';
 
 const APP = {
-  KEY: '1311585d0455175d1123297577a5dc06',
   baseURL: 'https://api.themoviedb.org/3/',
   IMG_BASE_URL: 'https://image.tmdb.org/t/p/',
 
@@ -10,6 +9,8 @@ const APP = {
     window.addEventListener('popstate', NAV.popHistory);
     let searchBtn = document.getElementById('btnSearch');
     searchBtn.addEventListener('click', SEARCH.getInput);
+    document.getElementById('shuffleMovies').addEventListener('click', DISCOVER.shuffle);
+    DISCOVER.load();
 
     if (
       window.matchMedia('(hover: hover) and (pointer: fine)').matches &&
@@ -21,6 +22,88 @@ const APP = {
       });
     }
 
+  },
+};
+
+const DISCOVER = {
+  movies: [],
+
+  load: () => {
+    const status = document.getElementById('discoverStatus');
+    const page = Math.floor(Math.random() * 500) + 1;
+    const url = `/api/tmdb?path=discover%2Fmovie&language=en-US&sort_by=popularity.desc&page=${page}`;
+
+    fetch(url)
+      .then((response) => {
+        if (!response.ok) throw new Error(`Unable to load movies (${response.status}).`);
+        return response.json();
+      })
+      .then((data) => {
+        DISCOVER.movies = data.results || [];
+        if (!DISCOVER.movies.length) {
+          status.textContent = 'No movies found right now. Try again in a moment.';
+          return;
+        }
+        DISCOVER.shuffle();
+      })
+      .catch(() => {
+        status.textContent = 'Movie picks could not load. Please try again.';
+      });
+  },
+
+  shuffle: () => {
+    if (!DISCOVER.movies.length) {
+      DISCOVER.load();
+      return;
+    }
+
+    const movies = DISCOVER.movies.slice();
+    for (let index = movies.length - 1; index > 0; index -= 1) {
+      const randomIndex = Math.floor(Math.random() * (index + 1));
+      [movies[index], movies[randomIndex]] = [movies[randomIndex], movies[index]];
+    }
+
+    const container = document.getElementById('discoverMovies');
+    const fragment = document.createDocumentFragment();
+    movies.slice(0, 8).forEach((movie) => {
+      const col = document.createElement('div');
+      col.className = 'col';
+
+      const card = document.createElement('article');
+      card.className = 'card';
+
+      if (movie.poster_path) {
+        const poster = document.createElement('img');
+        poster.src = `${APP.IMG_BASE_URL}w500${movie.poster_path}`;
+        poster.alt = `Poster for ${movie.title}`;
+        poster.loading = 'lazy';
+        card.appendChild(poster);
+      } else {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'discover-poster-placeholder';
+        placeholder.setAttribute('aria-hidden', 'true');
+        placeholder.textContent = '✦';
+        card.appendChild(placeholder);
+      }
+
+      const body = document.createElement('div');
+      body.className = 'card-body';
+      const title = document.createElement('h3');
+      title.className = 'card-title';
+      title.textContent = movie.title || 'Untitled movie';
+      const details = document.createElement('p');
+      details.className = 'card-text';
+      const year = movie.release_date ? movie.release_date.slice(0, 4) : 'Release date unknown';
+      const rating = Number.isFinite(movie.vote_average) ? ` · ★ ${movie.vote_average.toFixed(1)}` : '';
+      details.textContent = `${year}${rating}`;
+      body.append(title, details);
+      card.appendChild(body);
+      col.appendChild(card);
+      fragment.appendChild(col);
+    });
+
+    container.replaceChildren(fragment);
+    document.getElementById('discoverStatus').textContent = 'A fresh mix of popular movies, shuffled just for you.';
   },
 };
 
@@ -53,8 +136,7 @@ const SEARCH = {
   },
 
   doFetch() {
-    console.log(APP.KEY);
-    let url = `${APP.baseURL}search/person?api_key=${APP.KEY}&query=${SEARCH.input}&language=en-US`;
+    let url = `/api/tmdb?path=search%2Fperson&query=${encodeURIComponent(SEARCH.input)}&language=en-US`;
 
     fetch(url)
       .then((response) => {
@@ -92,18 +174,18 @@ const ACTORS = {
 
   displayActors: (actors) => {
     console.log(actors);
-    let homePage = document.getElementById('instructions');
     let actorsPage = document.getElementById('actors');
     let mediaPage = document.getElementById('media');
+    let discoverPage = document.getElementById('discover');
 
     actorsPage.style.cssText = `
     animation: glass-enter 600ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
    `;
-    homePage.style.display = 'none';
+    discoverPage.style.display = 'none';
     actorsPage.style.display = 'flex';
     mediaPage.style.display = 'none';
 
-    let cards = document.querySelector('.row');
+    let cards = document.getElementById('actorCards');
     cards.innerHTML = '';
 
     let df = document.createDocumentFragment();
@@ -331,11 +413,11 @@ const NAV = {
     if (!input) {
       let actorsPage = document.getElementById('actors');
       let mediaPage = document.getElementById('media');
-      let homePage = document.getElementById('instructions');
+      let discoverPage = document.getElementById('discover');
 
       actorsPage.style.display = 'none';
       mediaPage.style.display = 'none';
-      homePage.style.display = 'block';
+      discoverPage.style.display = 'block';
     } else {
       if (/\d/.test(input)) {
         let actorID = input.split('/')[1];

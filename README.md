@@ -1,31 +1,56 @@
-# Website Features Description
-This repository contains a website that provides the following features, utilizing TheMovieDB API to fetch actors and movies data:
+# Stillframe — entertainment catalog
 
-## Save Search Results to localStorage
-The website allows users to save the results of their searches to the browser's localStorage. Each search result is stored using the value from the search field as the key. This feature ensures that subsequent searches with the same key can be retrieved from the localStorage without making a fetch request.
+Stillframe is an early, server-rendered-by-static-files entertainment catalogue built with semantic HTML, custom CSS, strict TypeScript, and The Movie Database (TMDB) v3 API. Its visual direction uses a restrained liquid-glass shell, ambient seafoam/aqua light, and responsive scan-friendly catalogue cards.
 
-## History API and Location Hash
-- The website utilizes the History API to update the URL dynamically, reflecting the search term and the current screen of the application. The location.hash is used to include details about the user's current location within the app. The following locations are supported:
+## Stack and structure
 
-- Home Page with No Results: Represents the initial landing page of the website when no search results are available.
+- `index.html` — minimal static shell and metadata.
+- `css/main.css` — liquid-glass light/dark themes, aurora ambient layer, cards, filters, detail styles, and responsive breakpoints.
+- `src/main.ts` — typed interactive catalogue UI and state.
+- `src/catalog.ts`, `src/tmdb.ts`, `src/cache.ts`, `src/types.ts` — query mapping, request/cache boundary, and TMDB types.
+- `src/auth.ts` — typed client boundary for the same-origin account API.
+- `server.cjs` — static file server, constrained same-origin TMDB proxy, and email/password account API.
+- `docs/BRAINSTORM.md` — reference critique, design alternatives, selection, gap analysis, and rollout plan.
 
-- Tim Actors Page: Displays search results for the term "tim" fetched from TheMovieDB API. This page is accessible through the search functionality, and the search results are stored in localStorage.
+## Run locally
 
-- Tim/123324 Media Page: Shows the search results for the actor with the ID 123324 fetched from TheMovieDB API. The Actors Page (accessible via the #tim location) also includes results for the search term "tim".
+Requires Node.js 18+ and npm.
 
-## Sorting Results
-Users can control the sorting of search results based on either the name or popularity of the items. The website provides a toggle option that allows users to switch between ascending and descending order for both name and popularity sorting.
+1. Copy `.env.example` to `.env` and add your TMDB v3 API key as `TMDB_API_KEY`.
+2. Run `npm install`.
+3. Run `npm run dev` (strict TypeScript build followed by the local server).
+4. Open `http://127.0.0.1:8080`.
+5. Run `npm test` for the strict build and Node test suite.
 
-## Handling Back Button Navigation
-To ensure smooth navigation, the website utilizes the popstate event to handle back button navigation. Alternatively, the hashchange event can be used as an alternative method for handling back-button navigation.
+The API key is read only by `server.cjs`; do not put it in browser JavaScript or commit `.env`. The browser uses the same-origin `/api/tmdb` proxy. The canonical upstream API base remains `https://api.themoviedb.org/3/`.
 
-## CSS Transitions
-CSS transitions have been implemented to enhance the user experience during navigation between different pages. The transitions have a duration ranging from 0.3 seconds to 0.9 seconds, providing a smooth visual effect.
+## Current catalogue features
 
-## Loading Animation Overlay
-Whenever a fetch request is made to TheMovieDB API, a loading animation overlay appears to provide visual feedback to the user. This overlay indicates that a process is ongoing in the background.
+- TMDB-backed Trending, Movies, TV Shows, Anime, and Asian Dramas tabs.
+- Sort, language, release-status, and category filters in a panel opened by the header filter icon; active filters are flagged on the icon and tab/filter state is reflected in the URL.
+- Season-scoped anime query with season/year selection; responsive cards, shimmer loading, retry/empty messaging, and load-more / intersection-sentinel pagination.
+- Email/password accounts: signup, login, logout, and session restore from the header account area.
+- Persistent theme and watchlist, live multi-search suggestions, and a title detail foundation for movie/TV routes.
+- Existing people search is reachable through the search overlay's actor field.
 
-## Error Message Display
-- In case of a failure to fetch data from TheMovieDB API, the website displays an error message to alert the user. This feature ensures that users are informed when there is an issue retrieving the requested data.
+## Accounts
 
-- Please refer to the website for a live demonstration of these features. TheMovieDB API integration provides access to a wide range of actors and movies data. Feel free to explore the code and provide any feedback or suggestions.
+`server.cjs` owns the whole account flow — no third-party identity service is involved.
+
+- `POST /api/auth/signup` takes `displayName`, `email`, and `password` (8–128 characters) and returns the new account plus an `HttpOnly`, `SameSite=Lax` session cookie.
+- `POST /api/auth/login`, `POST /api/auth/logout`, and `GET /api/auth/session` complete the flow.
+- Passwords are hashed with `scrypt` and a per-account random salt; only the derived hash is stored.
+- Sessions are opaque random tokens stored server-side as SHA-256 digests, so logout revokes them immediately and a leaked store is not a usable credential.
+- Accounts and sessions live in `data/auth.json` (git-ignored, override with `DATA_DIR`). Static serving refuses to serve that directory.
+- Requests to the account API are size-limited and rate-limited per client; the session cookie is marked `Secure` when `SESSION_COOKIE_SECURE=1`.
+- An authenticated watchlist is stored per account on the server and syncs across signed-in browsers. Titles saved before signup/sign-in are merged into the account on the first session restore.
+- Signing out clears account-specific watchlist data from that browser; signing back into the account restores it. Anonymous browsing can still use the local watchlist.
+- Watchlist endpoints are `GET /api/auth/watchlist` and `PUT /api/auth/watchlist`; they require a valid session and accept up to 500 title records.
+
+## Scope still in progress
+
+This is an incremental upgrade, not yet the entire global-catalog roadmap in `docs/BRAINSTORM.md`. Accounts do not yet support password reset or email verification. Detail tabs currently have a foundations-only state; full episodes/videos/providers/visuals/recommendations interactions, schedule/trailers/genre/watchlist routes, SSR SEO, shared countdown ticker, full keyboard/dialog focus management, and measured AA contrast audit remain future milestones. Anime “Source” tags and episode countdowns are not guessed when TMDB data is missing. TMDB credentials and network availability are required for live catalogue data.
+
+## TMDB attribution
+
+This product uses the TMDB API but is not endorsed or certified by TMDB.
