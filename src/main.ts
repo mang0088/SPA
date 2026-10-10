@@ -1,12 +1,12 @@
 import { AuthError, loadSession, loadWatchlist, logIn, logOut, saveWatchlist, signUp, type AuthUser } from './auth.js';
 import { catalogQuery, loadCatalog, loadGenres, mapCatalogItem, seasonOf, seasonRange, selectedTab, type CatalogFilters } from './catalog.js';
 import { tmdbRequest } from './tmdb.js';
-import type { CatalogItem, CatalogTab, TmdbListResponse, TmdbPerson, TmdbTitle, UpcomingCategory } from './types.js';
+import type { CatalogItem, CatalogTab, TmdbListResponse, TmdbTitle, UpcomingCategory } from './types.js';
 
 type SelectValue = 'popular' | 'top_rated' | 'upcoming' | 'now_playing' | 'on_the_air' | 'airing_today' | 'title';
 
 const NAV_TABS: Array<{ key: CatalogTab; label: string }> = [
-  { key: 'trending', label: 'Movie Trending' },
+  { key: 'trending', label: 'Trending' },
   { key: 'movies', label: 'Movies' },
   { key: 'tv', label: 'TV Shows' },
   { key: 'anime', label: 'Anime' },
@@ -14,7 +14,7 @@ const NAV_TABS: Array<{ key: CatalogTab; label: string }> = [
 ];
 
 const TAB_LABELS: Record<CatalogTab, string> = {
-  trending: 'Movie Trending',
+  trending: 'Trending',
   movies: 'Movies',
   tv: 'TV Shows',
   anime: 'Anime',
@@ -500,12 +500,19 @@ function showDetailError(container: HTMLElement, error: unknown, retryAction: ()
   const retry = el('button', 'secondary-pill', 'Retry');
   retry.type = 'button';
   retry.addEventListener('click', retryAction);
-  container.replaceChildren(el('p', 'catalog-status', `Failed to load data. ${message}`), retry);
+  container.replaceChildren(el('p', 'detail-message', `Failed to load data. ${message}`), retry);
 }
 
+let noticeTimer = 0;
 function showNotice(message: string): void {
-  const status = document.getElementById('catalogStatus');
-  if (status) status.textContent = message;
+  const notice = document.getElementById('appNotice') ?? el('p', 'app-notice');
+  notice.id = 'appNotice';
+  notice.setAttribute('role', 'status');
+  notice.setAttribute('aria-live', 'polite');
+  notice.textContent = message;
+  if (!notice.isConnected) document.body.append(notice);
+  window.clearTimeout(noticeTimer);
+  noticeTimer = window.setTimeout(() => notice.remove(), 4500);
 }
 
 function openSearch(): void {
@@ -521,17 +528,7 @@ function openSearch(): void {
   input.placeholder = 'Search movies, shows, people…';
   input.setAttribute('aria-label', 'Search movies, shows, and people');
   const suggestions = el('div', 'search-suggestions');
-  const legacyActorSearch = el('form', 'actor-search-form');
-  const actorSearch = el('input', 'glass-input');
-  actorSearch.id = 'actorSearch';
-  actorSearch.type = 'search';
-  actorSearch.placeholder = 'Search an actor';
-  actorSearch.setAttribute('aria-label', 'Search for an actor');
-  const actorSubmit = el('button', 'secondary-pill', 'Find actor');
-  actorSubmit.type = 'submit';
-  legacyActorSearch.append(actorSearch, actorSubmit);
-  legacyActorSearch.addEventListener('submit', (event) => { event.preventDefault(); backdrop.remove(); void performActorSearch(actorSearch.value); });
-  dialog.append(input, suggestions, legacyActorSearch);
+  dialog.append(input, suggestions);
   backdrop.append(dialog);
   document.body.append(backdrop);
   input.focus();
@@ -543,13 +540,14 @@ function openSearch(): void {
       if (query.length < 2) { suggestions.replaceChildren(); return; }
       timer = window.setTimeout(() => {
       const loading = el('div', 'search-loading');
-      loading.textContent = 'Searching titles…';
+      loading.textContent = 'Searching…';
       suggestions.replaceChildren(loading);
       void tmdbRequest<TmdbListResponse<TmdbTitle>>('search/multi', { query, include_adult: false })
         .then((result) => {
           if (suggestions.dataset.queryVersion !== String(queryVersion)) return;
           suggestions.replaceChildren();
           result.results.slice(0, 6).forEach((item) => {
+            const mediaType = item.media_type ?? (item.known_for_department ? 'person' : 'movie');
             const row = el('button', 'suggestion-row');
             row.type = 'button';
             if (item.poster_path || item.profile_path) {
@@ -559,14 +557,33 @@ function openSearch(): void {
               row.append(image);
             }
             const title = el('span', 'suggestion-title', item.title ?? item.name ?? 'Untitled');
-            const mediaType = item.media_type ?? (item.known_for_department ? 'person' : 'movie');
             const year = (item.release_date ?? item.first_air_date ?? '').slice(0, 4);
             const meta = el('span', 'suggestion-meta', `${mediaType.toUpperCase()}${year ? ` · ${year}` : ''}`);
             row.append(title, meta);
             row.addEventListener('click', () => {
+              if (mediaType === 'person') {
+                const knownFor = item.known_for ?? [];
+                const backToResults = el('button', 'secondary-pill', 'Back to search results');
+                backToResults.type = 'button';
+                backToResults.addEventListener('click', () => input.dispatchEvent(new Event('input')));
+                suggestions.replaceChildren(el('p', 'search-loading', `Titles featuring ${item.name ?? 'this person'}`), backToResults);
+                knownFor.forEach((knownTitle) => {
+                  const knownType = knownTitle.media_type ?? (knownTitle.first_air_date ? 'tv' : 'movie');
+                  const knownRow = el('button', 'suggestion-row');
+                  knownRow.type = 'button';
+                  knownRow.append(el('span', 'suggestion-title', knownTitle.title ?? knownTitle.name ?? 'Untitled'));
+                  knownRow.append(el('span', 'suggestion-meta', knownType.toUpperCase()));
+                  knownRow.addEventListener('click', () => {
+                    backdrop.remove();
+                    navigateToDetail(knownType as 'movie' | 'tv', knownTitle.id);
+                  });
+                  suggestions.append(knownRow);
+                });
+                if (!knownFor.length) suggestions.append(el('p', 'search-error', 'No related titles were returned for this result.'));
+                return;
+              }
               backdrop.remove();
-              if (mediaType === 'person') void performActorSearch(item.name ?? '');
-              else navigateToDetail(mediaType as 'movie' | 'tv', item.id);
+              navigateToDetail(mediaType as 'movie' | 'tv', item.id);
             });
             suggestions.append(row);
           });
@@ -679,13 +696,6 @@ function renderCatalog(): void {
   const main = document.getElementById('catalogMain');
   if (!main) return;
   const section = el('section', 'catalog-section');
-  section.setAttribute('aria-labelledby', 'catalogTitle');
-  const headingRow = el('div', 'catalog-heading-row');
-  const titleGroup = el('div', 'catalog-title-group');
-  titleGroup.append(el('p', 'eyebrow', 'A calmer way to find your next story'));
-  const heading = el('h1', 'catalog-title', headingText());
-  heading.id = 'catalogTitle';
-  titleGroup.append(heading, el('p', 'catalog-subtitle', subtitleText()));
   const filterBackdrop = el('div', `filter-drawer-backdrop${filtersOpen ? ' is-open' : ''}`);
   filterBackdrop.id = 'filterBackdrop';
   filterBackdrop.setAttribute('aria-hidden', String(!filtersOpen));
@@ -754,6 +764,11 @@ function renderCatalog(): void {
   filtersRow.append(drawerFooter);
   filterBackdrop.append(filtersRow);
   filterBackdrop.addEventListener('click', (event) => { if (event.target === filterBackdrop) closeFilterDrawer(); });
+  if (tab === 'anime') {
+    const seasonFilter = el('label', 'filter-control');
+    seasonFilter.append(el('span', 'filter-control-label', 'Anime season'), seasonControl());
+    filterControls.append(seasonFilter);
+  }
   if (tab === 'upcoming') {
     appendFilterControl(filterControls, 'Category', createSelect('upcoming-category', 'Category', [
       ['movies', 'Upcoming Movies'],
@@ -775,13 +790,6 @@ function renderCatalog(): void {
       draftStatus = value as CatalogFilters['status'];
     }));
   }
-  headingRow.append(titleGroup);
-  if (tab === 'anime') headingRow.append(seasonControl());
-  section.append(headingRow);
-  const status = el('p', 'catalog-status');
-  status.id = 'catalogStatus';
-  status.setAttribute('role', 'status');
-  status.setAttribute('aria-live', 'polite');
   const grid = el('div', 'catalog-grid');
   grid.id = 'catalogGrid';
   grid.setAttribute('aria-label', `${TAB_LABELS[tab]} titles`);
@@ -792,7 +800,7 @@ function renderCatalog(): void {
   const sentinel = el('div', 'catalog-sentinel');
   sentinel.id = 'pageSentinel';
   sentinel.setAttribute('aria-hidden', 'true');
-  section.append(status, grid, loadMore, sentinel);
+  section.append(grid, loadMore, sentinel);
   main.replaceChildren(section, filterBackdrop);
   applyFilterPanelState();
   renderCards();
@@ -876,34 +884,6 @@ function sortOptions(): Array<[string, string]> {
   if (tab === 'tv') return [['popular', 'Popularity'], ['top_rated', 'Rating'], ['on_the_air', 'On the air'], ['airing_today', 'Airing today']];
   if (tab === 'upcoming') return [['popular', 'Popularity'], ['title', 'Title']];
   return [['popular', 'Popularity'], ['top_rated', 'Rating'], ['title', 'Title']];
-}
-
-function headingText(): string {
-  if (tab === 'trending') return 'Trending This Week';
-  if (tab === 'movies') return 'Movies worth your time';
-  if (tab === 'tv') return 'Television, thoughtfully picked';
-  if (tab === 'anime') return `${selectedSeason} ${selectedSeasonYear} Anime`;
-  if (tab === 'upcoming') {
-    if (upcomingCategory === 'tv') return 'Upcoming TV Series';
-    if (upcomingCategory === 'anime') return 'Upcoming Anime';
-    if (upcomingCategory === 'dramas') return 'Upcoming Asian Dramas';
-    return 'Upcoming Movies';
-  }
-  return 'Stories from across Asia';
-}
-
-function subtitleText(): string {
-  if (tab === 'trending') return 'The stories finding an audience around the world.';
-  if (tab === 'movies') return 'New discoveries, timeless favorites, and what’s in theaters.';
-  if (tab === 'tv') return 'Series to settle into, from first episodes to returning favorites.';
-  if (tab === 'anime') return 'A seasonal selection of animation from Japan.';
-  if (tab === 'upcoming') {
-    if (upcomingCategory === 'tv') return 'Anticipated television series scheduled to premiere soon.';
-    if (upcomingCategory === 'anime') return 'Upcoming Japanese animation releases.';
-    if (upcomingCategory === 'dramas') return 'Upcoming Korean, Chinese, and Japanese series.';
-    return 'Anticipated films preparing for their debut in theaters and streaming.';
-  }
-  return 'Korean, Chinese, and Japanese series worth discovering.';
 }
 
 function setTab(nextTab: CatalogTab): void {
@@ -998,7 +978,7 @@ async function initializeCatalog(): Promise<void> {
     const [movieGenres, tvGenres] = await Promise.all([loadGenres('movie'), loadGenres('tv')]);
     genreMaps = { movie: movieGenres, tv: tvGenres };
   } catch {
-    showNotice('Genre labels are unavailable; titles are still shown.');
+    // Genre labels are optional; title cards still render without them.
   }
   await loadPage(true);
 }
@@ -1025,7 +1005,6 @@ async function loadPage(replace: boolean): Promise<void> {
     totalPages = Math.min(response.total_pages, 500);
     renderCards();
     setLoading(false, false);
-    showNotice(items.length ? `${items.length} titles · updated from TMDB` : 'No titles found for this selection.');
     if (filters.status === 'airing' || filters.status === 'upcoming' || tab === 'upcoming') {
       const type = (tab === 'movies' || (tab === 'upcoming' && upcomingCategory === 'movies')) ? 'movie' : 'tv';
       void loadGenres(type).then((genres) => { genreMaps[type] = genres; if (version === catalogLoadVersion) renderCards(); }).catch(() => undefined);
@@ -1036,12 +1015,16 @@ async function loadPage(replace: boolean): Promise<void> {
     const message = error instanceof Error ? error.message : 'Unknown TMDB error.';
     console.error(`[Catalog] ${tab} page ${currentPage} failed`, error);
     setLoading(false, false);
-    showNotice(retryAfter ? `TMDB rate limit — retry in ${retryAfter}s.` : `Failed to load data. ${message}`);
     const retry = el('button', 'secondary-pill', 'Retry');
     retry.type = 'button';
     retry.addEventListener('click', () => { void loadPage(true); });
-    document.getElementById('catalogStatus')?.append(' ', retry);
-    if (replace) document.getElementById('catalogGrid')?.replaceChildren();
+    const grid = document.getElementById('catalogGrid');
+    if (grid) {
+      const errorState = el('div', 'empty-state glass-surface');
+      errorState.append(el('p', undefined, retryAfter ? `TMDB rate limit — retry in ${retryAfter}s.` : `Failed to load data. ${message}`), retry);
+      if (replace) grid.replaceChildren();
+      grid.append(errorState);
+    }
   } finally {
     if (version === catalogLoadVersion) isLoading = false;
   }
@@ -1070,8 +1053,6 @@ function setLoading(loading: boolean, showSkeletons: boolean): void {
     button.textContent = loading ? 'Loading…' : page >= totalPages ? 'End of results' : 'Load more';
   }
   if (showSkeletons) {
-    const status = document.getElementById('catalogStatus');
-    if (status) status.textContent = 'Loading titles from TMDB…';
     const grid = document.getElementById('catalogGrid');
     if (grid) {
       grid.replaceChildren();
@@ -1342,57 +1323,12 @@ function toggleBookmark(item: CatalogItem, button: HTMLButtonElement): void {
   pendingBookmarks.delete(item.id);
 }
 
-async function performActorSearch(query: string): Promise<void> {
-  if (!query.trim()) return;
-  try {
-    const result = await tmdbRequest<TmdbListResponse<TmdbPerson>>('search/person', { query: query.trim(), page: 1 });      renderActorResults(result.results, query);
-      showNotice(`Found ${result.results.length} people for “${query}”.`);
-
-  } catch {
-    showNotice('People search is temporarily unavailable. Try again.');
-  }
-}
-
-function renderActorResults(people: TmdbPerson[], query: string): void {
-  const main = document.getElementById('catalogMain');
-  if (!main) return;
-  const section = el('section', 'catalog-section');
-  section.append(el('p', 'eyebrow', 'PEOPLE'), el('h1', 'catalog-title', `People named “${query}”`));
-  const returnButton = el('button', 'secondary-pill', 'Back to browsing');
-  returnButton.type = 'button';
-  returnButton.addEventListener('click', () => { renderCatalog(); void loadPage(true); });
-  section.append(returnButton);
-  const grid = el('div', 'catalog-grid actor-grid');
-  people.forEach((person) => {
-    const card = el('article', 'catalog-card glass-surface');
-    const frame = el('div', 'poster-frame');
-    if (person.profile_path) {
-      const image = el('img', 'catalog-poster');
-      image.src = `https://image.tmdb.org/t/p/w185${person.profile_path}`;
-      image.alt = `${person.name ?? 'Person'} portrait`;
-      image.loading = 'lazy';
-      frame.append(image);
-    }
-    const content = el('div', 'catalog-card-content');
-    content.append(el('h2', 'catalog-card-title', person.name ?? 'Unknown person'));
-    content.append(el('p', 'genre-line', person.known_for_department ?? 'Performer'));
-    if (person.known_for?.length) {
-      content.append(el('p', 'catalog-overview', `Known for ${person.known_for.slice(0, 2).map((work) => work.title ?? work.name ?? 'a title').join(' and ')}.`));
-    }
-    card.append(frame, content);
-    grid.append(card);
-  });
-  if (!people.length) grid.append(el('div', 'empty-state glass-surface', 'No people matched that search.'));
-  section.append(grid);
-  main.replaceChildren(section);
-}
-
 async function loadDetailRoute(type: 'movie' | 'tv', id: number, pushHistory = true): Promise<void> {
   loadController?.abort();
   const controller = new AbortController();
   loadController = controller;    const detail = document.getElementById('detailView') ?? el('main', 'detail-main');
     detail.id = 'detailView';
-  detail.replaceChildren(renderDetailNavigation(), el('p', 'catalog-status', 'Loading title details…'));
+  detail.replaceChildren(renderDetailNavigation(), el('p', 'detail-message', 'Loading title details…'));
   const main = document.getElementById('catalogMain');
   if (main && detail.parentElement !== main) main.replaceChildren(detail);
   if (pushHistory) history.pushState({}, '', `/title/${type}/${id}`);
@@ -1433,7 +1369,7 @@ async function loadDetailRoute(type: 'movie' | 'tv', id: number, pushHistory = t
         candidate.classList.toggle('active', candidate.textContent === name);
         candidate.setAttribute('aria-selected', String(candidate.textContent === name));
       });
-      tabsContent.replaceChildren(el('p', 'catalog-status', `Loading ${name.toLowerCase()}…`));
+      tabsContent.replaceChildren(el('p', 'detail-message', `Loading ${name.toLowerCase()}…`));
       if (name === 'Info') {
         const overviewPanel = el('div', 'detail-tab-panel');
         overviewPanel.append(el('h3', 'section-title', 'Overview'), el('p', 'detail-overview', overview));
@@ -1580,7 +1516,7 @@ async function loadDetailRoute(type: 'movie' | 'tv', id: number, pushHistory = t
       const retry = el('button', 'secondary-pill', 'Retry');
       retry.type = 'button';
       retry.addEventListener('click', () => { void loadDetailRoute(type, id, false); });
-      detail.replaceChildren(el('p', 'catalog-status', `Failed to load data. ${message}`), retry);
+      detail.replaceChildren(el('p', 'detail-message', `Failed to load data. ${message}`), retry);
     }
   }
 }

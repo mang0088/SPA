@@ -1,56 +1,170 @@
-# Stillframe — entertainment catalog
+<div align="center">
+  <a name="top"></a>
+  <img src="docs/assets/readme-hero.svg" alt="Stillframe — a calm, cinematic interface for finding movies, series and anime" width="100%" />
 
-Stillframe is an early, server-rendered-by-static-files entertainment catalogue built with semantic HTML, custom CSS, strict TypeScript, and The Movie Database (TMDB) v3 API. Its visual direction uses a restrained liquid-glass shell, ambient seafoam/aqua light, and responsive scan-friendly catalogue cards.
+  <h1>Stillframe</h1>
+  <p><strong>Find the story in every frame.</strong></p>
+  <p>A cinematic discovery catalog for exploring movies, television, seasonal anime and upcoming releases, powered by TMDB.</p>
 
-## Stack and structure
+  <p>
+    <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" alt="Strict TypeScript" />
+    <img src="https://img.shields.io/badge/Runtime-Node.js_18%2B-339933?logo=nodedotjs&logoColor=white" alt="Node.js 18 or later" />
+    <img src="https://img.shields.io/badge/API-TMDB-01B4E4?logo=themoviedatabase&logoColor=white" alt="TMDB API" />
+  </p>
 
-- `index.html` — minimal static shell and metadata.
-- `css/main.css` — liquid-glass light/dark themes, aurora ambient layer, cards, filters, detail styles, and responsive breakpoints.
-- `src/main.ts` — typed interactive catalogue UI and state.
-- `src/catalog.ts`, `src/tmdb.ts`, `src/cache.ts`, `src/types.ts` — query mapping, request/cache boundary, and TMDB types.
-- `src/auth.ts` — typed client boundary for the same-origin account API.
-- `server.cjs` — static file server, constrained same-origin TMDB proxy, and email/password account API.
-- `docs/BRAINSTORM.md` — reference critique, design alternatives, selection, gap analysis, and rollout plan.
+  <p>
+    <a href="#experience">Experience</a> ·
+    <a href="#preview">Preview</a> ·
+    <a href="#technology">Technology</a> ·
+    <a href="#getting-started">Get started</a> ·
+    <a href="#architecture">Architecture</a> ·
+    <a href="#quality">Quality</a>
+  </p>
+</div>
 
-## Run locally
+## A quieter kind of discovery
 
-Requires Node.js 18+ and npm.
+Stillframe brings a curated-feeling catalog and title details into one responsive web app. Browse live TMDB catalogs, refine them with filters, search movies, shows and people, and keep a watchlist in the browser or with an account.
 
-1. Copy `.env.example` to `.env` and add your TMDB v3 API key as `TMDB_API_KEY`.
-2. Run `npm install`.
-3. Run `npm run dev` (strict TypeScript build followed by the local server).
-4. Open `http://127.0.0.1:8080`.
-5. Run `npm test` for the strict build and Node test suite.
+<a id="preview"></a>
+## Preview
 
-The API key is read only by `server.cjs`; do not put it in browser JavaScript or commit `.env`. The browser uses the same-origin `/api/tmdb` proxy. The canonical upstream API base remains `https://api.themoviedb.org/3/`.
+<div align="center">
+  <img src="docs/assets/screenshots/trending-desktop.png" alt="Stillframe Trending catalog open in a desktop browser, showing the navigation, compact poster grid and movie cards" width="100%" />
+  <p><em>Trending discovery in the running application · captured locally at 1280 × 1000.</em></p>
+</div>
 
-## Current catalogue features
+## Experience
 
-- TMDB-backed Trending, Movies, TV Shows, Anime, and Asian Dramas tabs.
-- Sort, language, release-status, and category filters in a panel opened by the header filter icon; active filters are flagged on the icon and tab/filter state is reflected in the URL.
-- Season-scoped anime query with season/year selection; responsive cards, shimmer loading, retry/empty messaging, and load-more / intersection-sentinel pagination.
-- Email/password accounts: signup, login, logout, and session restore from the header account area.
-- Persistent theme and watchlist, live multi-search suggestions, and a title detail foundation for movie/TV routes.
-- Existing people search is reachable through the search overlay's actor field.
+| Discover | Refine | Explore | Keep |
+| --- | --- | --- | --- |
+| **Trending**, **Movies**, **TV Shows**, **Anime**, and **Upcoming** catalogs load live titles from TMDB. Upcoming can be narrowed to movies, TV, anime or Asian dramas. | Sort by popularity, rating or title; filter by language, release status and upcoming category. Anime has a season/year selector. | Poster cards reveal synopsis and cast context. Movie and TV detail routes include title information and interactive detail tabs. | Global multi-search returns title and people matches. Save titles locally, or sign in to sync your watchlist across sessions. |
 
-## Accounts
+The interface uses a dark/light theme, responsive poster grids, loading skeletons, retry/empty states, and load-more plus intersection-observer pagination. The desktop grid is tuned for five or more cards across; mobile retains its two-column layout.
 
-`server.cjs` owns the whole account flow — no third-party identity service is involved.
+## Technology
 
-- `POST /api/auth/signup` takes `displayName`, `email`, and `password` (8–128 characters) and returns the new account plus an `HttpOnly`, `SameSite=Lax` session cookie.
-- `POST /api/auth/login`, `POST /api/auth/logout`, and `GET /api/auth/session` complete the flow.
-- Passwords are hashed with `scrypt` and a per-account random salt; only the derived hash is stored.
-- Sessions are opaque random tokens stored server-side as SHA-256 digests, so logout revokes them immediately and a leaked store is not a usable credential.
-- Accounts and sessions live in `data/auth.json` (git-ignored, override with `DATA_DIR`). Static serving refuses to serve that directory.
-- Requests to the account API are size-limited and rate-limited per client; the session cookie is marked `Secure` when `SESSION_COOKIE_SECURE=1`.
-- An authenticated watchlist is stored per account on the server and syncs across signed-in browsers. Titles saved before signup/sign-in are merged into the account on the first session restore.
-- Signing out clears account-specific watchlist data from that browser; signing back into the account restores it. Anonymous browsing can still use the local watchlist.
-- Watchlist endpoints are `GET /api/auth/watchlist` and `PUT /api/auth/watchlist`; they require a valid session and accept up to 500 title records.
+| Area | Implementation |
+| --- | --- |
+| Frontend | Semantic HTML, custom CSS, strict TypeScript (ES2022 modules) |
+| Server | Node.js built-in HTTP server (`server.cjs`); static-file delivery and same-origin API routes |
+| Media data | TMDB v3 API through a constrained server-side proxy |
+| Accounts | First-party JSON account store; `scrypt` password hashes and opaque, server-side sessions |
+| Browser persistence | Local storage for preferences, TMDB response cache and anonymous watchlist |
+| Tests | Node's built-in test runner; integration and Chrome DevTools Protocol browser flow tests |
+| Dependencies | TypeScript for development/build; no frontend runtime framework |
 
-## Scope still in progress
+## Getting started
 
-This is an incremental upgrade, not yet the entire global-catalog roadmap in `docs/BRAINSTORM.md`. Accounts do not yet support password reset or email verification. Detail tabs currently have a foundations-only state; full episodes/videos/providers/visuals/recommendations interactions, schedule/trailers/genre/watchlist routes, SSR SEO, shared countdown ticker, full keyboard/dialog focus management, and measured AA contrast audit remain future milestones. Anime “Source” tags and episode countdowns are not guessed when TMDB data is missing. TMDB credentials and network availability are required for live catalogue data.
+### Prerequisites
 
-## TMDB attribution
+- Node.js 18 or later and npm.
+- A TMDB v3 API key for live catalog data. Keep the key on the server; never add it to browser code.
 
-This product uses the TMDB API but is not endorsed or certified by TMDB.
+### Install and run
+
+```sh
+git clone https://github.com/mang0088/SPA.git
+cd SPA
+npm install
+cp .env.example .env
+# Add your TMDB API key to .env, then:
+npm run dev
+```
+
+Open <http://127.0.0.1:8080>. `npm run dev` first runs the strict TypeScript build and then starts the server. `npm start` starts the server without rebuilding; run `npm run build` first after source changes.
+
+### Configuration
+
+| Variable | Required? | Purpose | Safe example |
+| --- | --- | --- | --- |
+| `TMDB_API_KEY` | Yes for live catalog data | Server-only credential for TMDB v3 requests | `replace-with-your-own-tmdb-v3-api-key` |
+| `DATA_DIR` | No | Directory for `auth.json` (defaults to `./data`) | `./data` |
+| `SESSION_COOKIE_SECURE` | No | Set to `1` behind HTTPS to mark the session cookie `Secure` and emit HSTS | `1` |
+| `PORT` | No | HTTP listening port (defaults to `8080`) | `8080` |
+| `HOST` | No | Bind address (defaults to `127.0.0.1`) | `127.0.0.1` |
+
+`DATA_DIR` should point to a private persistent directory outside tracked and static asset paths. The default `./data` directory is git-ignored. On production HTTPS, configure the proxy and set `SESSION_COOKIE_SECURE=1`.
+
+<details>
+  <summary>Account API and operational notes</summary>
+
+  - `POST /api/auth/signup` accepts `displayName`, `email`, and `password` (8–128 characters); duplicate email returns `409`.
+  - `POST /api/auth/login` and `POST /api/auth/logout` use JSON; `GET /api/auth/session` reads the HttpOnly session cookie.
+  - `GET /api/auth/watchlist` and `PUT /api/auth/watchlist` require a valid session. The server validates watchlist records and caps the list at 500 titles.
+  - Account request bodies are size-limited and account endpoints are rate-limited per remote address. Session cookies are `HttpOnly` and `SameSite=Lax`; `Secure` is conditional on HTTPS deployment configuration.
+  - TMDB API access is proxied by the server so the credential is not sent to the browser. TMDB/network access is required for live catalog results.
+
+</details>
+
+## Architecture
+
+```mermaid
+flowchart LR
+  Browser[Browser UI<br/>index.html + TypeScript + CSS]
+  Server[Node HTTP server<br/>server.cjs]
+  TMDB[TMDB v3 API]
+  Store[(Private JSON account store<br/>DATA_DIR/auth.json)]
+  Local[Browser localStorage<br/>cache, preferences, guest watchlist]
+  Browser -->|same-origin /api/tmdb| Server
+  Server -->|API key held server-side| TMDB
+  Browser -->|/api/auth/* with session cookie| Server
+  Server -->|hashed passwords and sessions| Store
+  Browser --> Local
+```
+
+### Project map
+
+```text
+.
+├── index.html           # Static HTML shell and metadata
+├── css/main.css         # Themes, catalog cards, detail UI and responsive layout
+├── src/
+│   ├── main.ts          # UI, navigation, global search and application state
+│   ├── catalog.ts       # Catalog query construction and TMDB item mapping
+│   ├── tmdb.ts          # Same-origin TMDB client, cache and in-flight request sharing
+│   ├── auth.ts          # Typed client for the account API
+│   ├── cache.ts         # Memory/localStorage cache helpers
+│   └── types.ts         # Shared catalog and TMDB types
+├── server.cjs           # Static server, TMDB proxy and account API
+├── test/                # Catalog, account and browser-flow tests
+├── docs/
+│   ├── assets/           # README artwork
+│   └── BRAINSTORM.md     # Product research and staged roadmap notes
+└── package.json          # Build, run and test scripts
+```
+
+## Quality
+
+```sh
+npm run build   # Strict TypeScript compile to dist/
+npm test        # Build plus Node integration and browser-flow tests
+npm run verify  # Alias for npm test
+```
+
+The browser-flow test launches headless Chrome from `C:\Program Files\Google\Chrome\Application\chrome.exe`; adjust that test configuration if your local Chrome installation differs. There is no separate lint script or production bundler configured.
+
+## Security and privacy
+
+- Keep `.env` private; `.env` and account data directories are git-ignored.
+- Passwords are stored as salted `scrypt` hashes. Session tokens are random, stored server-side as SHA-256 digests, and revoked on logout.
+- Static serving blocks the account store, including when a custom `DATA_DIR` is configured beneath the app root.
+- The server constrains TMDB proxy paths and sends browser security headers, including a Content Security Policy.
+- This repository does not include a dedicated security reporting policy. Avoid posting unpatched vulnerability details in a public issue.
+
+## Current scope
+
+The app has movie and TV title-detail routes, account signup/login/logout, a local and authenticated watchlist, and global multi-search. Password reset and email verification are not implemented. The project is an incremental catalog application, not a production identity platform; the JSON account store is designed for a single server instance and is not a shared multi-instance database.
+
+## Data attribution
+
+Stillframe uses the TMDB API but is **not endorsed or certified by TMDB**. Live data requires a developer-supplied TMDB API key and is subject to TMDB’s terms and usage policies. Artwork and media metadata are supplied by TMDB and their respective rights holders.
+
+## Contributing
+
+No contribution guide or license file is currently present. Before opening a pull request, run `npm test`; changes to the app should preserve strict TypeScript compilation and existing browser flows. Please clarify licensing and contribution terms with the project maintainers before redistributing this repository.
+
+<div align="center">
+  <sub>Stillframe · discover what to watch next</sub><br />
+  <a href="#top">Back to top ↑</a>
+</div>

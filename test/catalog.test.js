@@ -98,6 +98,10 @@ test('server safely serves the app, rewrites direct detail routes, and blocks un
   const page = await fetch(baseUrl);
   assert.equal(page.status, 200);
   assert.match(await page.text(), /dist\/src\/main\.js/);
+  assert.equal(page.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(page.headers.get('x-frame-options'), 'DENY');
+  assert.equal(page.headers.get('referrer-policy'), 'strict-origin-when-cross-origin');
+  assert.match(page.headers.get('content-security-policy') ?? '', /frame-ancestors 'none'/);
   const module = await fetch(`${baseUrl}/dist/src/main.js`);
   assert.equal(module.status, 200);
   assert.doesNotMatch(await module.text(), /api_key=/i);

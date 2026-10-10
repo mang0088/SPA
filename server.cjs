@@ -47,8 +47,32 @@ function allowedTmdbPath(value) {
   return /^(?:trending\/(?:all|movie|tv)\/week|search\/(?:multi|person)|movie\/(?:popular|upcoming|now_playing|top_rated)|tv\/(?:popular|on_the_air|airing_today|top_rated)|genre\/(?:movie|tv)\/list|discover\/(?:movie|tv)|(?:movie|tv)\/\d+(?:\/(?:keywords|recommendations|videos|images|external_ids|credits|watch\/providers|season\/\d+))?)$/.test(value);
 }
 
+function securityHeaders() {
+  const headers = {
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+    'Content-Security-Policy': [
+      "default-src 'self'",
+      "base-uri 'self'",
+      "object-src 'none'",
+      "frame-ancestors 'none'",
+      "form-action 'self'",
+      "script-src 'self'",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com data:",
+      "img-src 'self' data: https://image.tmdb.org https://img.youtube.com",
+      "connect-src 'self'",
+      'frame-src https://www.youtube-nocookie.com',
+    ].join('; '),
+  };
+  if (process.env.SESSION_COOKIE_SECURE === '1') headers['Strict-Transport-Security'] = 'max-age=31536000';
+  return headers;
+}
+
 function reply(response, status, body, contentType = 'application/json; charset=utf-8', extraHeaders = {}) {
-  response.writeHead(status, { 'Content-Type': contentType, 'X-Content-Type-Options': 'nosniff', ...extraHeaders });
+  response.writeHead(status, { 'Content-Type': contentType, ...securityHeaders(), ...extraHeaders });
   response.end(body);
 }
 
@@ -65,13 +89,17 @@ function authStorePath() {
   return path.join(dataDirectory(), 'auth.json');
 }
 
-function blockedStaticPrefixes() {
-  const prefixes = new Set(['/data/']);
-  const relative = path.relative(ROOT, dataDirectory());
-  if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
-    prefixes.add(`/${relative.split(path.sep).join('/')}/`);
+function blockedStaticPaths() {
+  const paths = new Set(['/data/auth.json']);
+  const storeRelative = path.relative(ROOT, authStorePath());
+  if (!storeRelative.startsWith('..') && !path.isAbsolute(storeRelative)) {
+    paths.add(`/${storeRelative.split(path.sep).join('/')}`);
   }
-  return [...prefixes];
+  const directoryRelative = path.relative(ROOT, dataDirectory());
+  if (directoryRelative && !directoryRelative.startsWith('..') && !path.isAbsolute(directoryRelative)) {
+    paths.add(`/${directoryRelative.split(path.sep).join('/')}/`);
+  }
+  return [...paths];
 }
 
 function readAuthStore() {
@@ -80,15 +108,13 @@ function readAuthStore() {
   try {
     if (!fs.existsSync(file)) return empty;
     const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
-    if (parsed === null || typeof parsed !== 'object') return empty;
-    return {
-      version: AUTH_STORE_VERSION,
-      users: Array.isArray(parsed.users) ? parsed.users : [],
-      sessions: parsed.sessions !== null && typeof parsed.sessions === 'object' && !Array.isArray(parsed.sessions) ? parsed.sessions : {},
-    };
+    if (parsed === null || typeof parsed !== 'object' || !Array.isArray(parsed.users) || parsed.sessions === null || typeof parsed.sessions !== 'object' || Array.isArray(parsed.sessions)) {
+      throw new Error('Invalid account store format.');
+    }
+    return { version: AUTH_STORE_VERSION, users: parsed.users, sessions: parsed.sessions };
   } catch (error) {
-    console.error('[auth] could not read the account store:', error instanceof Error ? error.message : String(error));
-    return empty;
+    console.error('[auth] Account store could not be read.');
+    throw error;
   }
 }
 
@@ -443,7 +469,7 @@ async function proxyTmdb(requestUrl, response) {
 
   try {
     const upstream = await fetch(upstreamUrl, { signal: AbortSignal.timeout(15000) });
-    const headers = { 'Content-Type': upstream.headers.get('content-type') || 'application/json; charset=utf-8', 'X-Content-Type-Options': 'nosniff' };
+    const headers = { 'Content-Type': upstream.headers.get('content-type') || 'application/json; charset=utf-8', ...securityHeaders() };
     const retryAfter = upstream.headers.get('retry-after');
     if (retryAfter) headers['Retry-After'] = retryAfter;
     response.writeHead(upstream.status, headers);
@@ -468,7 +494,7 @@ function serveFile(requestUrl, response) {
     return;
   }
 
-  if (blockedStaticPrefixes().some((prefix) => pathname === prefix.slice(0, -1) || pathname.startsWith(prefix))) {
+  if (blockedStaticPaths().some((blockedPath) => pathname === blockedPath || (blockedPath.endsWith('/') && pathname.startsWith(blockedPath)))) {
     reply(response, 404, 'Not found.', 'text/plain; charset=utf-8');
     return;
   }
@@ -492,7 +518,7 @@ function serveFile(requestUrl, response) {
     return;
   }
   const type = MIME_TYPES[path.extname(servedPath)] || 'application/octet-stream';
-  response.writeHead(200, { 'Content-Type': type, 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-cache' });
+  response.writeHead(200, { 'Content-Type': type, ...securityHeaders(), 'Cache-Control': 'no-cache' });
   fs.createReadStream(servedPath).pipe(response);
 }
 
@@ -508,7 +534,11 @@ const server = http.createServer((request, response) => {
     return;
   }
   if (requestUrl.pathname.startsWith('/api/auth/')) {
-    void handleAuth(request, requestUrl, response);
+    void handleAuth(request, requestUrl, response).catch((error) => {
+      console.error('[auth] Account request failed.');
+      if (!response.headersSent) replyJson(response, 500, { error: 'The account service could not complete the request.' });
+      else response.destroy();
+    });
     return;
   }
   if (request.method !== 'GET') {

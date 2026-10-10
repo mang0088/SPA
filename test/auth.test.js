@@ -179,11 +179,76 @@ test('the account store is never served as a static file', async () => {
   try {
     const response = await fetch(`${baseUrl}/data/auth.json`);
     assert.equal(response.status, 404);
+    assert.equal(response.headers.get('content-security-policy')?.includes("default-src 'self'"), true);
     assert.doesNotMatch(await response.text(), /stillframe-secret-marker/);
   } finally {
     if (!probeExistedBefore) {
       fs.rmSync(probe, { force: true });
       try { fs.rmdirSync(path.dirname(probe)); } catch { /* the directory is shared with other runs */ }
     }
+  }
+});
+
+test('corrupt account storage fails closed without overwriting stored bytes', async () => {
+  const original = fs.readFileSync(storeFile());
+  const corrupt = Buffer.from('{"probe":"must-not-be-reflected-or-overwritten"');
+  fs.writeFileSync(storeFile(), corrupt);
+  try {
+    const response = await post('/api/auth/signup', { displayName: 'Store Probe', email: 'store-probe@example.com', password: 'stillframe-audit-password' });
+    assert.equal(response.status, 500);
+    const payload = await response.json();
+    assert.equal(payload.error, 'The account service could not complete the request.');
+    assert.doesNotMatch(JSON.stringify(payload), /probe|stack|server\.cjs|stillframe-audit-password/i);
+    assert.deepEqual(fs.readFileSync(storeFile()), corrupt, 'failed storage reads do not replace the existing file');
+    assert.equal((await fetch(baseUrl)).status, 200, 'storage failure does not crash the HTTP server');
+  } finally {
+    fs.writeFileSync(storeFile(), original);
+  }
+});
+
+test('the account store is blocked when DATA_DIR is the static root', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'stillframe-root-store-'));
+  const rootServerFile = path.join(root, 'server.cjs');
+  fs.copyFileSync(path.join(process.cwd(), 'server.cjs'), rootServerFile);
+  fs.writeFileSync(path.join(root, 'index.html'), '<!doctype html><title>isolated test root</title>');
+  fs.writeFileSync(path.join(root, 'auth.json'), JSON.stringify({ version: 1, users: [], sessions: {}, probe: 'root-store-secret-marker' }));
+  const port = 22000 + Math.floor(Math.random() * 1000);
+  const isolatedServer = spawn(process.execPath, [rootServerFile], {
+    env: { ...process.env, PORT: String(port), HOST: '127.0.0.1', DATA_DIR: root, SESSION_COOKIE_SECURE: '1' },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  let isolatedStderr = '';
+  isolatedServer.stderr.on('data', (chunk) => { isolatedStderr += String(chunk); });
+  const isolatedUrl = `http://127.0.0.1:${port}`;
+  try {
+    await Promise.race([new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error(`isolated server readiness timed out: ${isolatedStderr}`)), 5000);
+      isolatedServer.stdout.on('data', (chunk) => {
+        if (String(chunk).includes('Catalog server listening')) { clearTimeout(timeout); resolve(); }
+      });
+      isolatedServer.once('error', reject);
+      isolatedServer.once('exit', (code) => reject(new Error(`isolated server exited before readiness (${code}): ${isolatedStderr}`)));
+    })]);
+    const response = await fetch(`${isolatedUrl}/auth.json`);
+    assert.equal(response.status, 404);
+    assert.doesNotMatch(await response.text(), /root-store-secret-marker/);
+    assert.equal(response.headers.get('strict-transport-security'), 'max-age=31536000');
+
+    const signup = await fetch(`${isolatedUrl}/api/auth/signup`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ displayName: 'Root Store', email: 'root-store@example.com', password: 'stillframe-audit-password' }),
+    });
+    assert.equal(signup.status, 201);
+    assert.match(signup.headers.get('set-cookie') ?? '', /; Secure(?:;|$)/);
+    assert.equal(signup.headers.get('strict-transport-security'), 'max-age=31536000');
+    assert.equal((await fetch(`${isolatedUrl}/auth.json`)).status, 404, 'the account store stays blocked after an account is created');
+    assert.equal((await fetch(isolatedUrl)).status, 200);
+  } finally {
+    if (isolatedServer.exitCode === null) {
+      isolatedServer.kill();
+      await Promise.race([once(isolatedServer, 'exit'), new Promise((resolve) => setTimeout(resolve, 2000))]);
+    }
+    fs.rmSync(root, { recursive: true, force: true });
   }
 });

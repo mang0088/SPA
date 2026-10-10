@@ -22,11 +22,6 @@ export interface TmdbTitle {
   adult?: boolean;
   profile_path?: string | null;
   known_for_department?: string;
-}
-
-export interface TmdbPerson extends TmdbTitle {
-  name?: string;
-  known_for_department?: string;
   known_for?: TmdbTitle[];
 }
 

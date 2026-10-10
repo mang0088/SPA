@@ -45,10 +45,10 @@ global.fetch = async (input, init) => {
     return new Response(JSON.stringify({ id: 1, episodes: [{ id: 1, episode_number: 1, name: 'Pilot', air_date: '2026-01-01' }] }), { status: 200, headers: { 'content-type': 'application/json' } });
   }
   if (path === 'search/multi') {
-    return new Response(JSON.stringify({ page: 1, total_pages: 1, total_results: 1, results: [{ id: 603, media_type: 'movie', title: 'Batman Integration Test', poster_path: '/test-poster.jpg', release_date: '2026-01-01' }] }), { status: 200, headers: { 'content-type': 'application/json' } });
-  }
-  if (path === 'search/person') {
-    return new Response(JSON.stringify({ page: 1, total_pages: 1, total_results: 1, results: [{ id: 99, name: 'Test Actor', profile_path: '/profile.jpg', known_for_department: 'Acting', known_for: [] }] }), { status: 200, headers: { 'content-type': 'application/json' } });
+    return new Response(JSON.stringify({ page: 1, total_pages: 1, total_results: 2, results: [
+      { id: 603, media_type: 'movie', title: 'Batman Integration Test', poster_path: '/test-poster.jpg', release_date: '2026-01-01' },
+      { id: 99, media_type: 'person', name: 'Test Actor', profile_path: '/profile.jpg', known_for_department: 'Acting', known_for: [{ id: 603, media_type: 'movie', title: 'Integration Test Film', poster_path: '/test-poster.jpg' }] },
+    ] }), { status: 200, headers: { 'content-type': 'application/json' } });
   }
   return new Response(JSON.stringify({ status_message: `Unhandled test endpoint ${path}`, test_auth: authenticated }), { status: 404, headers: { 'content-type': 'application/json' } });
 };
