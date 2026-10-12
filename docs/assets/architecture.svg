@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="arch-title arch-desc">
+  <title id="arch-title">MovieChart architecture</title>
+  <desc id="arch-desc">The browser UI talks to a Node.js HTTP server over same-origin API routes; the server proxies TMDB with a server-side API key and stores accounts and sessions in a private JSON store, while the browser keeps preferences, cache and the guest watchlist in localStorage.</desc>
+
+  <defs>
+    <linearGradient id="ar-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B1930"/>
+      <stop offset="1" stop-color="#07111F"/>
+    </linearGradient>
+    <radialGradient id="ar-glow-cyan" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#36E4FF" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#36E4FF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ar-glow-violet" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#8B5CF6" stop-opacity="0.15"/>
+      <stop offset="1" stop-color="#8B5CF6" stop-opacity="0"/>
+    </radialGradient>
+    <marker id="ar-arrow-cyan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#36E4FF" fill-opacity="0.8"/>
+    </marker>
+    <marker id="ar-arrow-violet" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#8B5CF6" fill-opacity="0.8"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="520" fill="url(#ar-bg)"/>
+  <ellipse cx="1020" cy="90" rx="360" ry="220" fill="url(#ar-glow-cyan)"/>
+  <ellipse cx="180" cy="470" rx="380" ry="220" fill="url(#ar-glow-violet)"/>
+
+  <!-- Boxes -->
+  <g font-family="'Manrope','Segoe UI',Helvetica,Arial,sans-serif" text-anchor="middle">
+    <g>
+      <rect x="40" y="70" width="260" height="120" rx="16" fill="#36E4FF" fill-opacity="0.06" stroke="#36E4FF" stroke-opacity="0.4" stroke-width="1.5"/>
+      <text x="170" y="112" fill="#F4F7FB" font-size="21" font-weight="700">Browser UI</text>
+      <text x="170" y="142" fill="#94A3B8" font-size="13.5">catalog · detail · search · watchlist</text>
+    </g>
+    <g>
+      <rect x="40" y="330" width="260" height="100" rx="16" fill="#8B5CF6" fill-opacity="0.07" stroke="#8B5CF6" stroke-opacity="0.45" stroke-width="1.5"/>
+      <text x="170" y="368" fill="#F4F7FB" font-size="19" font-weight="700">localStorage</text>
+      <text x="170" y="396" fill="#94A3B8" font-size="13.5">prefs · cache · guest watchlist</text>
+    </g>
+    <g>
+      <rect x="470" y="170" width="260" height="160" rx="16" fill="#36E4FF" fill-opacity="0.08" stroke="#36E4FF" stroke-opacity="0.55" stroke-width="1.5"/>
+      <text x="600" y="214" fill="#F4F7FB" font-size="21" font-weight="700">Node HTTP server</text>
+      <text x="600" y="242" fill="#BFE3E8" font-size="14">server.cjs</text>
+      <text x="600" y="278" fill="#94A3B8" font-size="13">static app · /api/tmdb · /api/auth</text>
+    </g>
+    <g>
+      <rect x="900" y="70" width="260" height="110" rx="16" fill="#36E4FF" fill-opacity="0.06" stroke="#36E4FF" stroke-opacity="0.4" stroke-width="1.5"/>
+      <text x="1030" y="112" fill="#F4F7FB" font-size="21" font-weight="700">TMDB v3 API</text>
+      <text x="1030" y="142" fill="#94A3B8" font-size="13.5">live media data</text>
+    </g>
+    <g>
+      <rect x="900" y="320" width="260" height="120" rx="16" fill="#8B5CF6" fill-opacity="0.07" stroke="#8B5CF6" stroke-opacity="0.45" stroke-width="1.5"/>
+      <text x="1030" y="366" fill="#F4F7FB" font-size="19" font-weight="700">JSON account store</text>
+      <text x="1030" y="396" fill="#94A3B8" font-size="13.5">DATA_DIR/auth.json</text>
+    </g>
+  </g>
+
+  <!-- Arrows -->
+  <g stroke-width="2" fill="none">
+    <path d="M300 215 L462 215" stroke="#36E4FF" stroke-opacity="0.65" marker-end="url(#ar-arrow-cyan)"/>
+    <path d="M300 280 L462 280" stroke="#36E4FF" stroke-opacity="0.65" marker-end="url(#ar-arrow-cyan)"/>
+    <path d="M170 190 L170 322" stroke="#8B5CF6" stroke-opacity="0.65" marker-end="url(#ar-arrow-violet)"/>
+    <path d="M730 212 L896 130" stroke="#36E4FF" stroke-opacity="0.65" marker-end="url(#ar-arrow-cyan)"/>
+    <path d="M730 288 L896 370" stroke="#8B5CF6" stroke-opacity="0.65" marker-end="url(#ar-arrow-violet)"/>
+  </g>
+
+  <!-- Arrow labels -->
+  <g font-family="'Manrope','Segoe UI',Helvetica,Arial,sans-serif" text-anchor="middle" font-size="13.5">
+    <text x="385" y="198" fill="#BFE3E8">same-origin /api/tmdb</text>
+    <text x="385" y="263" fill="#BFE3E8">/api/auth + session cookie</text>
+    <text x="228" y="264" fill="#C9BDF4" text-anchor="start">persists locally</text>
+    <text x="813" y="152" fill="#BFE3E8">API key stays server-side</text>
+    <text x="813" y="312" fill="#C9BDF4">scrypt hashes · sessions</text>
+  </g>
+</svg>

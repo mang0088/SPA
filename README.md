@@ -1,65 +1,167 @@
 <div align="center">
   <a name="top"></a>
-  <img src="docs/assets/readme-hero.svg" alt="Stillframe — a calm, cinematic interface for finding movies, series and anime" width="100%" />
+  <img src="docs/assets/moviechart-banner.svg" alt="MovieChart banner — a midnight-navy cinematic scene with cyan and violet light, poster-grid motifs and the MovieChart wordmark" width="100%" />
 
-  <h1>Stillframe</h1>
+  <h1>MovieChart</h1>
   <p><strong>Find the story in every frame.</strong></p>
-  <p>A cinematic discovery catalog for exploring movies, television, seasonal anime and upcoming releases, powered by TMDB.</p>
+  <p>A cinematic discovery catalog for movies, television, seasonal anime and upcoming releases — live TMDB data, refined poster cards, deep title details and a watchlist that follows you across devices.</p>
 
   <p>
     <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" alt="Strict TypeScript" />
-    <img src="https://img.shields.io/badge/Runtime-Node.js_18%2B-339933?logo=nodedotjs&logoColor=white" alt="Node.js 18 or later" />
+    <img src="https://img.shields.io/badge/Node.js-18%2B-339933?logo=nodedotjs&logoColor=white" alt="Node.js 18 or later" />
     <img src="https://img.shields.io/badge/API-TMDB-01B4E4?logo=themoviedatabase&logoColor=white" alt="TMDB API" />
+    <img src="https://img.shields.io/badge/tests-node--test-8B5CF6?logo=nodedotjs&logoColor=white" alt="Tests run with the Node.js built-in test runner" />
   </p>
 
   <p>
-    <a href="#experience">Experience</a> ·
+    <a href="#overview">Overview</a> ·
+    <a href="#features">Features</a> ·
     <a href="#preview">Preview</a> ·
-    <a href="#technology">Technology</a> ·
-    <a href="#getting-started">Get started</a> ·
+    <a href="#tech-stack">Tech Stack</a> ·
+    <a href="#getting-started">Getting Started</a> ·
+    <a href="#configuration">Configuration</a> ·
     <a href="#architecture">Architecture</a> ·
-    <a href="#quality">Quality</a>
+    <a href="#testing">Testing</a> ·
+    <a href="#security">Security</a> ·
+    <a href="#contributing">Contributing</a>
   </p>
+
+  <img src="docs/assets/screenshots/moviechart-catalog-desktop.jpg" alt="MovieChart Trending catalog in a desktop browser at 1280 by 1000 — rounded navigation bar, poster grid with live TMDB titles and rating chips" width="100%" />
+  <p><em>The Trending catalog in the running application · live TMDB data · captured locally at 1280 × 1000.</em></p>
 </div>
 
-## A quieter kind of discovery
+## Overview
 
-Stillframe brings a curated-feeling catalog and title details into one responsive web app. Browse live TMDB catalogs, refine them with filters, search movies, shows and people, and keep a watchlist in the browser or with an account.
+MovieChart is a self-contained media-discovery web app: browse live TMDB catalogs, narrow them with filters, search across titles and people, open rich detail pages and keep a watchlist — anonymously in the browser or synced to an account. The entire product is one Node.js server, one strict-TypeScript front end and zero production dependencies.
 
-<a id="preview"></a>
+### At a glance
+
+| | |
+| --- | --- |
+| **Product** | MovieChart — cinematic movies, series and anime discovery |
+| **Front end** | Strict TypeScript (ES2022 modules), semantic HTML, hand-built CSS design system with dark/light themes |
+| **Back end** | Node.js built-in HTTP server — static app, same-origin TMDB proxy and first-party account API |
+| **Media data** | TMDB v3 (trending, discover, search, details, seasons, videos, images, watch providers) |
+| **Accounts** | Email + password · salted `scrypt` hashes · opaque server-side sessions |
+| **Persistence** | JSON account store (`DATA_DIR/auth.json`) · browser localStorage for cache, preferences and guest watchlist |
+| **Quality** | 16 automated tests — Node test runner plus headless-Chrome end-to-end flows |
+| **Runtime** | Node.js 18+ · one dev dependency (TypeScript) · no bundler, no framework |
+
+## Features
+
+### Discover and explore
+
+| | |
+| --- | --- |
+| **Five live catalogs** | Trending, Movies, TV Shows, Anime and Upcoming, each mapped to the right TMDB endpoint. |
+| **Upcoming, your way** | Narrow Upcoming to movies, TV, seasonal anime or Asian dramas (Korean, Chinese and Japanese originals). |
+| **Sort and filter** | Reorder by popularity, rating or title; filter by language and release status; pick an anime season and year. |
+| **Endless browsing** | Load-more buttons backed by an intersection observer, loading skeletons and honest empty and retry states. |
+
+### Search and navigation
+
+| | |
+| --- | --- |
+| **Global multi-search** | One dialog searches titles and people together, with posters and known-for context in every suggestion. |
+| **People to titles** | Open a person's known-for titles straight into the standard detail routes. |
+| **Shareable deep links** | Every title has a real URL (`/title/movie/603`, `/title/tv/603`) that the server rewrites for direct loads and refreshes. |
+
+### Media details and metadata
+
+| | |
+| --- | --- |
+| **Detail tabs** | Info, Episodes (series), Videos, Streams, Visuals and Recommendations — each loaded on demand. |
+| **Full metadata** | Human-readable premiere date, runtime or episode counts, genres, ratings and budget and box-office chips. |
+| **Where to watch** | Regional streaming offers grouped by stream, rent and buy, with provider logos. |
+| **Trailers and artwork** | YouTube trailers open in an accessible modal; backdrops and posters open in a lightbox. |
+| **Cast rail** | Scrollable, snap-aligned cast cards with profile images and roles. |
+
+### Poster cards and interactions
+
+| | |
+| --- | --- |
+| **Poster-led grid** | Compact cinematic cards tuned for five-across desktop and two-column mobile layouts. |
+| **Hover and focus expansion** | Cards reveal synopsis and cast context on hover, keyboard focus or an explicit toggle. |
+| **Quick save** | A bookmark control on every card saves and removes titles without leaving the grid. |
+| **Ratings and badges** | Star ratings, genre badges and creator credits that stay legible at small sizes. |
+
+### Accounts and watchlist
+
+| | |
+| --- | --- |
+| **Anonymous watchlist** | Save titles immediately in localStorage — no account required. |
+| **Account sync** | Sign up to merge and sync your watchlist across sessions and devices (capped at 500 titles). |
+| **Saved view** | One click filters the catalog to your saved titles; the header badge shows the count and hides itself at zero. |
+| **First-party accounts** | Signup, login, logout and session lookup over the same origin — no third-party identity provider. |
+
+### Performance, accessibility and security
+
+| | |
+| --- | --- |
+| **Caching and request sharing** | TTL cache for TMDB responses plus shared in-flight requests to avoid duplicate calls. |
+| **Server-side API proxy** | The TMDB key never reaches the browser; proxy paths are allow-listed and query input is constrained. |
+| **Hardened accounts** | `scrypt` password hashing, SHA-256 session digests, HttpOnly cookies, rate-limited endpoints and a protected account store. |
+| **Accessible by default** | Semantic markup, visible focus rings, `aria` state on toggles and tabs, and `prefers-reduced-motion` support. |
+| **Theming** | Cinematic dark theme and a light variant, both driven by shared CSS design tokens. |
+
 ## Preview
 
-<div align="center">
-  <img src="docs/assets/screenshots/trending-desktop.png" alt="Stillframe Trending catalog open in a desktop browser, showing the navigation, compact poster grid and movie cards" width="100%" />
-  <p><em>Trending discovery in the running application · captured locally at 1280 × 1000.</em></p>
-</div>
+<table>
+  <tr>
+    <td align="center">
+      <img src="docs/assets/screenshots/moviechart-detail-desktop.jpg" alt="MovieChart title detail page at 1280 by 1000 — backdrop hero, poster, synopsis, Watchlist action, metadata chips and detail tabs" width="100%" />
+      <br />
+      <sub>Title detail — hero, metadata chips, Watchlist action and on-demand tabs.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/assets/screenshots/moviechart-search.jpg" alt="MovieChart global search overlay showing live TMDB search results with posters and metadata" width="100%" />
+      <br />
+      <sub>Global multi-search over titles and people.</sub>
+    </td>
+    <td align="center">
+      <img src="docs/assets/screenshots/moviechart-card-expanded.jpg" alt="A MovieChart poster card in its expanded hover state, revealing synopsis and cast details over the poster" width="100%" />
+      <br />
+      <sub>Poster card expanded state — synopsis and cast over the artwork.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/assets/screenshots/moviechart-catalog-mobile.jpg" alt="MovieChart Trending catalog on a 390 pixel wide mobile viewport with a two-column poster grid" width="100%" />
+      <br />
+      <sub>Mobile catalog — two-column grid at 390 px.</sub>
+    </td>
+    <td align="center">
+      <img src="docs/assets/screenshots/moviechart-detail-mobile.jpg" alt="MovieChart title detail page on a 390 pixel wide mobile viewport showing the stacked poster and synopsis layout" width="100%" />
+      <br />
+      <sub>Mobile detail — stacked composition at 390 px.</sub>
+    </td>
+  </tr>
+</table>
 
-## Experience
+<p align="center"><sub>All screenshots are captured from this running application with live TMDB data at the stated viewport sizes.</sub></p>
 
-| Discover | Refine | Explore | Keep |
-| --- | --- | --- | --- |
-| **Trending**, **Movies**, **TV Shows**, **Anime**, and **Upcoming** catalogs load live titles from TMDB. Upcoming can be narrowed to movies, TV, anime or Asian dramas. | Sort by popularity, rating or title; filter by language, release status and upcoming category. Anime has a season/year selector. | Poster cards reveal synopsis and cast context. Movie and TV detail routes include title information and interactive detail tabs. | Global multi-search returns title and people matches. Save titles locally, or sign in to sync your watchlist across sessions. |
+## Tech Stack
 
-The interface uses a dark/light theme, responsive poster grids, loading skeletons, retry/empty states, and load-more plus intersection-observer pagination. The desktop grid is tuned for five or more cards across; mobile retains its two-column layout.
-
-## Technology
-
-| Area | Implementation |
+| Layer | Technologies |
 | --- | --- |
-| Frontend | Semantic HTML, custom CSS, strict TypeScript (ES2022 modules) |
-| Server | Node.js built-in HTTP server (`server.cjs`); static-file delivery and same-origin API routes |
-| Media data | TMDB v3 API through a constrained server-side proxy |
-| Accounts | First-party JSON account store; `scrypt` password hashes and opaque, server-side sessions |
-| Browser persistence | Local storage for preferences, TMDB response cache and anonymous watchlist |
-| Tests | Node's built-in test runner; integration and Chrome DevTools Protocol browser flow tests |
-| Dependencies | TypeScript for development/build; no frontend runtime framework |
+| **Front end** | Strict TypeScript (ES2022 modules) · semantic HTML · CSS custom-property design system with dark/light themes |
+| **UI runtime** | No framework — typed DOM rendering in `src/main.ts` (catalog, detail routes, search, dialogs, watchlist) |
+| **Back end** | Node.js built-in HTTP server (`server.cjs`) · static hosting · same-origin JSON API |
+| **Media API** | TMDB v3 through an allow-listed server-side proxy (`/api/tmdb`) |
+| **Persistence** | JSON account store in `DATA_DIR` · browser localStorage (preferences, TMDB cache, guest watchlist) |
+| **Auth and security** | `scrypt` hashing · SHA-256 session digests · HttpOnly / SameSite cookies · CSP and security headers · per-address rate limiting |
+| **Testing** | Node's built-in test runner (`node --test`) · minimal Chrome DevTools Protocol client · deterministic TMDB mock |
+| **Tooling** | `tsc` build into `dist/` · npm scripts (`build`, `start`, `dev`, `test`, `verify`) · no bundler and no lint step configured |
 
-## Getting started
+## Getting Started
 
 ### Prerequisites
 
-- Node.js 18 or later and npm.
-- A TMDB v3 API key for live catalog data. Keep the key on the server; never add it to browser code.
+- **Node.js 18 or later** and npm (the server and tests use `fetch` and `AbortSignal.timeout`).
+- **A TMDB v3 API key** for live catalog data — free from your TMDB account. It is used server-side only.
+- **Google Chrome** at `C:\Program Files\Google\Chrome\Application\chrome.exe` for the browser-flow tests (adjust `test/browser-flows.test.js` if your install differs).
 
 ### Install and run
 
@@ -67,104 +169,138 @@ The interface uses a dark/light theme, responsive poster grids, loading skeleton
 git clone https://github.com/mang0088/SPA.git
 cd SPA
 npm install
-cp .env.example .env
-# Add your TMDB API key to .env, then:
-npm run dev
+cp .env.example .env   # then add your own TMDB v3 API key
+npm run dev            # strict TypeScript build + start the server
 ```
 
-Open <http://127.0.0.1:8080>. `npm run dev` first runs the strict TypeScript build and then starts the server. `npm start` starts the server without rebuilding; run `npm run build` first after source changes.
+Open <http://127.0.0.1:5500>. `npm run dev` rebuilds before starting; use `npm start` to run the existing build, and `npm run build` after editing source files.
 
-### Configuration
+### Build and test
 
-| Variable | Required? | Purpose | Safe example |
-| --- | --- | --- | --- |
-| `TMDB_API_KEY` | Yes for live catalog data | Server-only credential for TMDB v3 requests | `replace-with-your-own-tmdb-v3-api-key` |
-| `DATA_DIR` | No | Directory for `auth.json` (defaults to `./data`) | `./data` |
-| `SESSION_COOKIE_SECURE` | No | Set to `1` behind HTTPS to mark the session cookie `Secure` and emit HSTS | `1` |
-| `PORT` | No | HTTP listening port (defaults to `8080`) | `8080` |
-| `HOST` | No | Bind address (defaults to `127.0.0.1`) | `127.0.0.1` |
-
-`DATA_DIR` should point to a private persistent directory outside tracked and static asset paths. The default `./data` directory is git-ignored. On production HTTPS, configure the proxy and set `SESSION_COOKIE_SECURE=1`.
+```sh
+npm run build    # strict TypeScript compile into dist/
+npm test         # build + 16 tests: catalog, account API and browser flows
+npm run verify   # alias for npm test
+```
 
 <details>
-  <summary>Account API and operational notes</summary>
+  <summary><strong>Windows note</strong> — running without <code>cp</code></summary>
 
-  - `POST /api/auth/signup` accepts `displayName`, `email`, and `password` (8–128 characters); duplicate email returns `409`.
+  On Windows shells without `cp`, copy the template manually:
+
+  ```powershell
+  copy .env.example .env
+  ```
+
+</details>
+
+## Configuration
+
+Copy `.env.example` to `.env` and fill in your key. The server reads `.env` at startup.
+
+| Variable | Required | Purpose | Safe example |
+| --- | --- | --- | --- |
+| `TMDB_API_KEY` | Yes, for live data | Server-only credential for TMDB v3 requests | `replace-with-your-own-tmdb-v3-api-key` |
+| `DATA_DIR` | No | Directory for `auth.json` (defaults to `./data`, git-ignored) | `./data` |
+| `SESSION_COOKIE_SECURE` | No | Set to `1` behind HTTPS to mark the session cookie `Secure` and emit HSTS | `1` |
+| `PORT` | No | HTTP listening port (defaults to `5500`) | `5500` |
+| `HOST` | No | Bind address (defaults to `127.0.0.1`) | `127.0.0.1` |
+
+`DATA_DIR` should point to a private, persistent directory outside tracked and static asset paths. On production HTTPS, terminate TLS at a proxy and set `SESSION_COOKIE_SECURE=1`.
+
+<details>
+  <summary><strong>Account API and operational notes</strong></summary>
+
+  - `POST /api/auth/signup` accepts `displayName`, `email` and `password` (8–128 characters); duplicate emails return `409`.
   - `POST /api/auth/login` and `POST /api/auth/logout` use JSON; `GET /api/auth/session` reads the HttpOnly session cookie.
-  - `GET /api/auth/watchlist` and `PUT /api/auth/watchlist` require a valid session. The server validates watchlist records and caps the list at 500 titles.
-  - Account request bodies are size-limited and account endpoints are rate-limited per remote address. Session cookies are `HttpOnly` and `SameSite=Lax`; `Secure` is conditional on HTTPS deployment configuration.
-  - TMDB API access is proxied by the server so the credential is not sent to the browser. TMDB/network access is required for live catalog results.
+  - `GET /api/auth/watchlist` and `PUT /api/auth/watchlist` require a valid session. Watchlist records are validated server-side and capped at 500 titles.
+  - Account request bodies are size-limited and account endpoints are rate-limited per remote address (40 attempts per 5 minutes).
+  - The TMDB API is proxied by the server so the credential never reaches the browser; live results require server-side network access to TMDB.
 
 </details>
 
 ## Architecture
 
-```mermaid
-flowchart LR
-  Browser[Browser UI<br/>index.html + TypeScript + CSS]
-  Server[Node HTTP server<br/>server.cjs]
-  TMDB[TMDB v3 API]
-  Store[(Private JSON account store<br/>DATA_DIR/auth.json)]
-  Local[Browser localStorage<br/>cache, preferences, guest watchlist]
-  Browser -->|same-origin /api/tmdb| Server
-  Server -->|API key held server-side| TMDB
-  Browser -->|/api/auth/* with session cookie| Server
-  Server -->|hashed passwords and sessions| Store
-  Browser --> Local
-```
+<div align="center">
+  <img src="docs/assets/architecture.svg" alt="Architecture diagram: the browser UI calls the Node.js HTTP server over same-origin API routes; the server proxies TMDB with a server-side API key and stores accounts and sessions in a private JSON store, while the browser keeps preferences, cache and the guest watchlist in localStorage" width="100%" />
+</div>
 
 ### Project map
 
 ```text
 .
-├── index.html           # Static HTML shell and metadata
-├── css/main.css         # Themes, catalog cards, detail UI and responsive layout
+├── index.html                # Static shell, metadata and module entry
+├── css/main.css              # Design tokens, themes, components, responsive rules
 ├── src/
-│   ├── main.ts          # UI, navigation, global search and application state
-│   ├── catalog.ts       # Catalog query construction and TMDB item mapping
-│   ├── tmdb.ts          # Same-origin TMDB client, cache and in-flight request sharing
-│   ├── auth.ts          # Typed client for the account API
-│   ├── cache.ts         # Memory/localStorage cache helpers
-│   └── types.ts         # Shared catalog and TMDB types
-├── server.cjs           # Static server, TMDB proxy and account API
-├── test/                # Catalog, account and browser-flow tests
+│   ├── main.ts               # UI: header, catalog, detail routes, search, watchlist
+│   ├── catalog.ts            # Catalog queries, filters and TMDB item mapping
+│   ├── tmdb.ts               # Same-origin TMDB client, TTL cache, shared in-flight requests
+│   ├── auth.ts               # Typed client for the account API
+│   ├── cache.ts              # Memory and localStorage cache helpers
+│   └── types.ts              # Shared catalog and TMDB types
+├── server.cjs                # Static server, TMDB proxy, account API and sessions
+├── test/
+│   ├── catalog.test.js       # Catalog construction, mapping and proxy behaviour
+│   ├── auth.test.js          # Account API and account-store safety checks
+│   ├── browser-flows.test.js # Headless-Chrome end-to-end flows
+│   ├── mock-upstream.cjs     # Deterministic TMDB mock used by the tests
+│   └── cdp-client.js         # Minimal Chrome DevTools Protocol client
 ├── docs/
-│   ├── assets/           # README artwork
-│   └── BRAINSTORM.md     # Product research and staged roadmap notes
-└── package.json          # Build, run and test scripts
+│   ├── BRAINSTORM.md         # Product research and staged roadmap notes
+│   └── assets/               # Banner, architecture diagram and application screenshots
+├── .env.example              # Configuration template
+└── package.json              # build · start · dev · test · verify
 ```
 
-## Quality
+## Testing
 
 ```sh
-npm run build   # Strict TypeScript compile to dist/
-npm test        # Build plus Node integration and browser-flow tests
-npm run verify  # Alias for npm test
+npm test
 ```
 
-The browser-flow test launches headless Chrome from `C:\Program Files\Google\Chrome\Application\chrome.exe`; adjust that test configuration if your local Chrome installation differs. There is no separate lint script or production bundler configured.
+The suite runs 16 tests across three layers:
 
-## Security and privacy
+| Layer | File | Covers |
+| --- | --- | --- |
+| **Catalog** | `test/catalog.test.js` | Query construction, season helpers, TMDB item mapping, proxy routing and safe static serving |
+| **Accounts** | `test/auth.test.js` | Signup, login, logout, watchlist validation, method and body hardening, account-store protection |
+| **Browser flows** | `test/browser-flows.test.js` | Real headless Chrome: tabs, filters, pagination, card expansion, detail tabs, search, watchlist and auth round-trip |
 
-- Keep `.env` private; `.env` and account data directories are git-ignored.
-- Passwords are stored as salted `scrypt` hashes. Session tokens are random, stored server-side as SHA-256 digests, and revoked on logout.
-- Static serving blocks the account store, including when a custom `DATA_DIR` is configured beneath the app root.
-- The server constrains TMDB proxy paths and sends browser security headers, including a Content Security Policy.
+Tests are deterministic: `test/mock-upstream.cjs` replaces TMDB with a stable fixture, so no network or API key is needed to run them.
+
+## Security
+
+- Passwords are stored as salted `scrypt` hashes; session tokens are random, stored server-side as SHA-256 digests and revoked on logout.
+- Session cookies are `HttpOnly` and `SameSite=Lax`; `Secure` and HSTS are enabled with `SESSION_COOKIE_SECURE=1`.
+- Static serving blocks the account store — including a custom `DATA_DIR` placed beneath the app root.
+- The TMDB proxy only forwards allow-listed paths and constrained query parameters; the API key stays on the server.
+- Browser security headers include a Content Security Policy.
+- Account endpoints are rate-limited per remote address; request bodies are size-limited.
+- `.env` and account data are git-ignored. Never commit real keys — the template value in `.env.example` is a placeholder.
 - This repository does not include a dedicated security reporting policy. Avoid posting unpatched vulnerability details in a public issue.
 
-## Current scope
+## Scope and limitations
 
-The app has movie and TV title-detail routes, account signup/login/logout, a local and authenticated watchlist, and global multi-search. Password reset and email verification are not implemented. The project is an incremental catalog application, not a production identity platform; the JSON account store is designed for a single server instance and is not a shared multi-instance database.
+MovieChart ships movie and TV detail routes, account signup/login/logout, a local and authenticated watchlist, and global multi-search. Password reset and email verification are **not** implemented, and the JSON account store is designed for a single server instance — it is not a shared multi-instance database. Planned and exploratory work is recorded in [docs/BRAINSTORM.md](docs/BRAINSTORM.md).
 
 ## Data attribution
 
-Stillframe uses the TMDB API but is **not endorsed or certified by TMDB**. Live data requires a developer-supplied TMDB API key and is subject to TMDB’s terms and usage policies. Artwork and media metadata are supplied by TMDB and their respective rights holders.
+MovieChart uses the TMDB API but is **not endorsed or certified by TMDB**. Live data requires a developer-supplied TMDB API key and is subject to TMDB's terms and usage policies. Artwork and media metadata are supplied by TMDB and their respective rights holders.
 
 ## Contributing
 
-No contribution guide or license file is currently present. Before opening a pull request, run `npm test`; changes to the app should preserve strict TypeScript compilation and existing browser flows. Please clarify licensing and contribution terms with the project maintainers before redistributing this repository.
+No contribution guide or license file is currently present in this repository. Before opening a pull request:
+
+1. Run `npm test` — changes should keep strict TypeScript compilation and the existing browser flows green.
+2. Keep the TMDB key server-side and avoid committing secrets or captured user data.
+3. Please clarify licensing and contribution terms with the project maintainers before redistributing this repository.
+
+---
 
 <div align="center">
-  <sub>Stillframe · discover what to watch next</sub><br />
-  <a href="#top">Back to top ↑</a>
+  <sub>MovieChart · find the story in every frame</sub><br />
+  <a href="#top">Back to top ↑</a> ·
+  <a href="docs/BRAINSTORM.md">Product notes</a> ·
+  <a href=".env.example">Config template</a> ·
+  <a href="https://www.themoviedb.org/">Data by TMDB</a>
 </div>
