@@ -1,10 +1,10 @@
 <div align="center">
   <a name="top"></a>
-  <img src="docs/assets/moviechart-banner.svg" alt="MovieChart banner — a midnight-navy cinematic scene with cyan and violet light, poster-grid motifs and the MovieChart wordmark" width="100%" />
+  <img src="docs/assets/moviechart-banner.svg" alt="MovieChart banner, a midnight-navy cinematic scene with cyan and violet light, poster-grid motifs and the MovieChart wordmark" width="100%" />
 
   <h1>MovieChart</h1>
   <p><strong>Find the story in every frame.</strong></p>
-  <p>A cinematic discovery catalog for movies, television, seasonal anime and upcoming releases — live TMDB data, refined poster cards, deep title details and a watchlist that follows you across devices.</p>
+  <p>A cinematic discovery catalog for movies, television, seasonal anime and upcoming releases, live TMDB data, refined poster cards, deep title details and a watchlist that follows you across devices.</p>
 
   <p>
     <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" alt="Strict TypeScript" />
@@ -26,25 +26,25 @@
     <a href="#contributing">Contributing</a>
   </p>
 
-  <img src="docs/assets/screenshots/moviechart-catalog-desktop.jpg" alt="MovieChart Trending catalog in a desktop browser at 1280 by 1000 — rounded navigation bar, poster grid with live TMDB titles and rating chips" width="100%" />
+  <img src="docs/assets/screenshots/moviechart-catalog-desktop.jpg" alt="MovieChart Trending catalog in a desktop browser at 1280 by 1000, rounded navigation bar, poster grid with live TMDB titles and rating chips" width="100%" />
   <p><em>The Trending catalog in the running application · live TMDB data · captured locally at 1280 × 1000.</em></p>
 </div>
 
 ## Overview
 
-MovieChart is a self-contained media-discovery web app: browse live TMDB catalogs, narrow them with filters, search across titles and people, open rich detail pages and keep a watchlist — anonymously in the browser or synced to an account. The entire product is one Node.js server, one strict-TypeScript front end and zero production dependencies.
+MovieChart is a self-contained media-discovery web app: browse live TMDB catalogs, narrow them with filters, search across titles and people, open rich detail pages and keep a watchlist, anonymously in the browser or synced to an account. The entire product is one Node.js server, one strict-TypeScript front end and zero production dependencies.
 
 ### At a glance
 
 | | |
 | --- | --- |
-| **Product** | MovieChart — cinematic movies, series and anime discovery |
+| **Product** | MovieChart, cinematic movies, series and anime discovery |
 | **Front end** | Strict TypeScript (ES2022 modules), semantic HTML, hand-built CSS design system with dark/light themes |
-| **Back end** | Node.js built-in HTTP server — static app, same-origin TMDB proxy and first-party account API |
+| **Back end** | Node.js built-in HTTP server, static app, same-origin TMDB proxy and first-party account API |
 | **Media data** | TMDB v3 (trending, discover, search, details, seasons, videos, images, watch providers) |
 | **Accounts** | Email + password · salted `scrypt` hashes · opaque server-side sessions |
 | **Persistence** | JSON account store (`DATA_DIR/auth.json`) · browser localStorage for cache, preferences and guest watchlist |
-| **Quality** | 16 automated tests — Node test runner plus headless-Chrome end-to-end flows |
+| **Quality** | 16 automated tests, Node test runner plus headless-Chrome end-to-end flows |
 | **Runtime** | Node.js 18+ · one dev dependency (TypeScript) · no bundler, no framework |
 
 ## Features
@@ -70,7 +70,7 @@ MovieChart is a self-contained media-discovery web app: browse live TMDB catalog
 
 | | |
 | --- | --- |
-| **Detail tabs** | Info, Episodes (series), Videos, Streams, Visuals and Recommendations — each loaded on demand. |
+| **Detail tabs** | Info, Episodes (series), Videos, Streams, Visuals and Recommendations, each loaded on demand. |
 | **Full metadata** | Human-readable premiere date, runtime or episode counts, genres, ratings and budget and box-office chips. |
 | **Where to watch** | Regional streaming offers grouped by stream, rent and buy, with provider logos. |
 | **Trailers and artwork** | YouTube trailers open in an accessible modal; backdrops and posters open in a lightbox. |
@@ -89,10 +89,10 @@ MovieChart is a self-contained media-discovery web app: browse live TMDB catalog
 
 | | |
 | --- | --- |
-| **Anonymous watchlist** | Save titles immediately in localStorage — no account required. |
+| **Anonymous watchlist** | Save titles immediately in localStorage, no account required. |
 | **Account sync** | Sign up to merge and sync your watchlist across sessions and devices (capped at 500 titles). |
 | **Saved view** | One click filters the catalog to your saved titles; the header badge shows the count and hides itself at zero. |
-| **First-party accounts** | Signup, login, logout and session lookup over the same origin — no third-party identity provider. |
+| **First-party accounts** | Signup, login, logout and session lookup over the same origin, no third-party identity provider. |
 
 ### Performance, accessibility and security
 
@@ -109,9 +109,9 @@ MovieChart is a self-contained media-discovery web app: browse live TMDB catalog
 <table>
   <tr>
     <td align="center">
-      <img src="docs/assets/screenshots/moviechart-detail-desktop.jpg" alt="MovieChart title detail page at 1280 by 1000 — backdrop hero, poster, synopsis, Watchlist action, metadata chips and detail tabs" width="100%" />
+      <img src="docs/assets/screenshots/moviechart-detail-desktop.jpg" alt="MovieChart title detail page at 1280 by 1000, backdrop hero, poster, synopsis, Watchlist action, metadata chips and detail tabs" width="100%" />
       <br />
-      <sub>Title detail — hero, metadata chips, Watchlist action and on-demand tabs.</sub>
+      <sub>Title detail, hero, metadata chips, Watchlist action and on-demand tabs.</sub>
     </td>
   </tr>
   <tr>
@@ -123,19 +123,19 @@ MovieChart is a self-contained media-discovery web app: browse live TMDB catalog
     <td align="center">
       <img src="docs/assets/screenshots/moviechart-card-expanded.jpg" alt="A MovieChart poster card in its expanded hover state, revealing synopsis and cast details over the poster" width="100%" />
       <br />
-      <sub>Poster card expanded state — synopsis and cast over the artwork.</sub>
+      <sub>Poster card expanded state, synopsis and cast over the artwork.</sub>
     </td>
   </tr>
   <tr>
     <td align="center">
       <img src="docs/assets/screenshots/moviechart-catalog-mobile.jpg" alt="MovieChart Trending catalog on a 390 pixel wide mobile viewport with a two-column poster grid" width="100%" />
       <br />
-      <sub>Mobile catalog — two-column grid at 390 px.</sub>
+      <sub>Mobile catalog, two-column grid at 390 px.</sub>
     </td>
     <td align="center">
       <img src="docs/assets/screenshots/moviechart-detail-mobile.jpg" alt="MovieChart title detail page on a 390 pixel wide mobile viewport showing the stacked poster and synopsis layout" width="100%" />
       <br />
-      <sub>Mobile detail — stacked composition at 390 px.</sub>
+      <sub>Mobile detail, stacked composition at 390 px.</sub>
     </td>
   </tr>
 </table>
@@ -147,7 +147,7 @@ MovieChart is a self-contained media-discovery web app: browse live TMDB catalog
 | Layer | Technologies |
 | --- | --- |
 | **Front end** | Strict TypeScript (ES2022 modules) · semantic HTML · CSS custom-property design system with dark/light themes |
-| **UI runtime** | No framework — typed DOM rendering in `src/main.ts` (catalog, detail routes, search, dialogs, watchlist) |
+| **UI runtime** | No framework, typed DOM rendering in `src/main.ts` (catalog, detail routes, search, dialogs, watchlist) |
 | **Back end** | Node.js built-in HTTP server (`server.cjs`) · static hosting · same-origin JSON API |
 | **Media API** | TMDB v3 through an allow-listed server-side proxy (`/api/tmdb`) |
 | **Persistence** | JSON account store in `DATA_DIR` · browser localStorage (preferences, TMDB cache, guest watchlist) |
@@ -160,7 +160,7 @@ MovieChart is a self-contained media-discovery web app: browse live TMDB catalog
 ### Prerequisites
 
 - **Node.js 18 or later** and npm (the server and tests use `fetch` and `AbortSignal.timeout`).
-- **A TMDB v3 API key** for live catalog data — free from your TMDB account. It is used server-side only.
+- **A TMDB v3 API key** for live catalog data, free from your TMDB account. It is used server-side only.
 - **Google Chrome** at `C:\Program Files\Google\Chrome\Application\chrome.exe` for the browser-flow tests (adjust `test/browser-flows.test.js` if your install differs).
 
 ### Install and run
@@ -184,7 +184,7 @@ npm run verify   # alias for npm test
 ```
 
 <details>
-  <summary><strong>Windows note</strong> — running without <code>cp</code></summary>
+  <summary><strong>Windows note</strong>, running without <code>cp</code></summary>
 
   On Windows shells without `cp`, copy the template manually:
 
@@ -272,16 +272,16 @@ Tests are deterministic: `test/mock-upstream.cjs` replaces TMDB with a stable fi
 
 - Passwords are stored as salted `scrypt` hashes; session tokens are random, stored server-side as SHA-256 digests and revoked on logout.
 - Session cookies are `HttpOnly` and `SameSite=Lax`; `Secure` and HSTS are enabled with `SESSION_COOKIE_SECURE=1`.
-- Static serving blocks the account store — including a custom `DATA_DIR` placed beneath the app root.
+- Static serving blocks the account store, including a custom `DATA_DIR` placed beneath the app root.
 - The TMDB proxy only forwards allow-listed paths and constrained query parameters; the API key stays on the server.
 - Browser security headers include a Content Security Policy.
 - Account endpoints are rate-limited per remote address; request bodies are size-limited.
-- `.env` and account data are git-ignored. Never commit real keys — the template value in `.env.example` is a placeholder.
+- `.env` and account data are git-ignored. Never commit real keys, the template value in `.env.example` is a placeholder.
 - This repository does not include a dedicated security reporting policy. Avoid posting unpatched vulnerability details in a public issue.
 
 ## Scope and limitations
 
-MovieChart ships movie and TV detail routes, account signup/login/logout, a local and authenticated watchlist, and global multi-search. Password reset and email verification are **not** implemented, and the JSON account store is designed for a single server instance — it is not a shared multi-instance database. Planned and exploratory work is recorded in [docs/BRAINSTORM.md](docs/BRAINSTORM.md).
+MovieChart ships movie and TV detail routes, account signup/login/logout, a local and authenticated watchlist, and global multi-search. Password reset and email verification are **not** implemented, and the JSON account store is designed for a single server instance, it is not a shared multi-instance database. Planned and exploratory work is recorded in [docs/BRAINSTORM.md](docs/BRAINSTORM.md).
 
 ## Data attribution
 
@@ -291,7 +291,7 @@ MovieChart uses the TMDB API but is **not endorsed or certified by TMDB**. Live 
 
 No contribution guide or license file is currently present in this repository. Before opening a pull request:
 
-1. Run `npm test` — changes should keep strict TypeScript compilation and the existing browser flows green.
+1. Run `npm test` changes should keep strict TypeScript compilation and the existing browser flows green.
 2. Keep the TMDB key server-side and avoid committing secrets or captured user data.
 3. Please clarify licensing and contribution terms with the project maintainers before redistributing this repository.
 
