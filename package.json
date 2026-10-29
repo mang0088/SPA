@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "build:netlify": "npm run build && node scripts/stage-netlify.mjs",
     "start": "node server.cjs",
     "dev": "npm run build && npm start",
     "test": "npm run build && node --test test/catalog.test.js test/auth.test.js test/browser-flows.test.js",

@@ -1,0 +1,14 @@
+[build]
+  command = "npm run build:netlify"
+  publish = "_site"
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/tmdb"
+  to = "/.netlify/functions/tmdb"
+  status = 200
+
+[[redirects]]
+  from = "/title/*"
+  to = "/index.html"
+  status = 200

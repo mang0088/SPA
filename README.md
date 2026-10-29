@@ -179,9 +179,16 @@ Open <http://127.0.0.1:5500>. `npm run dev` rebuilds before starting; use `npm s
 
 ```sh
 npm run build    # strict TypeScript compile into dist/
+npm run build:netlify # compile and stage the static site for Netlify
 npm test         # build + 16 tests: catalog, account API and browser flows
 npm run verify   # alias for npm test
 ```
+
+### Deploy to Netlify
+
+The included `netlify.toml` builds and publishes the compiled app and its static assets, routes TMDB requests through a Netlify Function, and supports direct title links. Set `TMDB_API_KEY` in **Site configuration → Environment variables**, then trigger a new deploy. Do not put the key in front-end code.
+
+The Netlify deployment supports browsing and the browser-local guest watchlist. Account signup/login and synced watchlists need the persistent Node.js account API in `server.cjs`; they are not available in this static/serverless deployment.
 
 <details>
   <summary><strong>Windows note</strong>, running without <code>cp</code></summary>
